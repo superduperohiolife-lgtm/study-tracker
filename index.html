@@ -29,8 +29,8 @@ body{
 .wrap{max-width:640px;margin:0 auto;padding:12px}
 h1{font-size:18px;margin:0}
 h2{font-size:15px;margin:0 0 10px;color:var(--tx2);font-weight:600}
+h3{font-size:13px;margin:12px 0 6px;color:var(--tx2);font-weight:600}
 .hd{display:flex;align-items:center;gap:8px;padding:10px 12px;position:sticky;top:0;background:rgba(15,23,42,.94);backdrop-filter:blur(8px);z-index:20;border-bottom:1px solid var(--line)}
-.hd .sub{font-size:11px;color:var(--tx3);margin-top:1px}
 .psel{width:auto!important;background:var(--card2);border:1px solid var(--line);color:var(--tx2);font-size:11px!important;padding:2px 6px!important;border-radius:7px;margin-top:2px;max-width:100%}
 .pill{margin-left:auto;font-size:11px;padding:4px 9px;border-radius:999px;background:var(--card2);color:var(--tx2);white-space:nowrap;border:1px solid var(--line);cursor:pointer}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
@@ -54,9 +54,11 @@ h2{font-size:15px;margin:0 0 10px;color:var(--tx2);font-weight:600}
 .mini span{font-size:10px;color:var(--tx3)}
 .next{margin-top:10px;background:linear-gradient(90deg,rgba(52,211,153,.14),transparent);border:1px solid rgba(52,211,153,.28);border-radius:9px;padding:8px 10px;font-size:12.5px}
 .next b{color:var(--ok);font-size:15px;font-variant-numeric:tabular-nums}
+.closed{margin-top:10px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:9px;padding:8px 10px;font-size:12.5px;color:var(--warn)}
 label{display:block;font-size:12px;color:var(--tx2);margin-bottom:4px}
 input,select,textarea,button{font-family:inherit;font-size:15px}
 input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 10px}
+input[type=checkbox]{width:auto;transform:scale(1.25);margin-right:6px;vertical-align:middle}
 input:focus,textarea:focus{outline:none;border-color:var(--ok)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fld{margin-bottom:10px}
@@ -67,12 +69,18 @@ input:focus,textarea:focus{outline:none;border-color:var(--ok)}
 .btn.sec{background:var(--card2);color:var(--tx2);border:1px solid var(--line);font-weight:600}
 .btn.dgr{background:transparent;color:var(--ng);border:1px solid var(--ng)}
 .btn+.btn{margin-top:8px}
+.sbtn{background:var(--card2);color:var(--tx2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer}
+.sbtn.pri{color:var(--ok);border-color:rgba(52,211,153,.45)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
-th,td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:left}
+th,td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{color:var(--tx3);font-weight:600;font-size:11px}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+th.c,td.c{text-align:center}
 tr.we td{background:rgba(56,189,248,.05)}
 tr.today td{background:rgba(52,211,153,.09)}
+tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+tr.cur td{background:rgba(52,211,153,.06)}
 .act{color:var(--tx3);cursor:pointer;font-size:11px;padding:0 3px}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(15,23,42,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding-bottom:var(--safeb);z-index:30}
@@ -83,13 +91,38 @@ tr.today td{background:rgba(52,211,153,.09)}
 details{margin-top:10px}
 summary{cursor:pointer;font-size:12px;color:var(--tx3);padding:5px 0}
 .note{font-size:11.5px;color:var(--tx3);line-height:1.65}
-.tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;background:var(--card2);color:var(--tx3);margin-left:5px}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:999px;background:var(--card2);color:var(--tx3);margin-left:5px;vertical-align:middle}
+.tag.ok{color:var(--ok);background:rgba(52,211,153,.12)}
+.tag.warn{color:var(--warn);background:rgba(251,191,36,.12)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .modal.on{display:flex}
-.modal .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:340px;width:100%}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + var(--safeb));background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:12.5px;z-index:40;opacity:0;transition:opacity .25s;pointer-events:none}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:360px;width:100%;max-height:90vh;overflow:auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + var(--safeb));background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:12.5px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
 .toast.on{opacity:1}
 svg{display:block}
+/* 分析フィードバック */
+.fbk{border-left:4px solid var(--c);padding-left:10px;margin-top:12px}
+.fbk:first-of-type{margin-top:0}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 8px}
+.kpi div{background:var(--card2);border-radius:8px;padding:5px 6px}
+.kpi b{display:block;font-size:13.5px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:9.5px;color:var(--tx3)}
+.fbl{list-style:none;margin:0;padding:0;font-size:12.5px}
+.fbl li{padding:3px 0 3px 20px;position:relative;line-height:1.55}
+.fbl li::before{position:absolute;left:0;top:3px;font-size:12px}
+.fbl li.good::before{content:"◎";color:var(--ok)}
+.fbl li.warn::before{content:"△";color:var(--warn)}
+.fbl li.tip::before{content:"→";color:var(--yuki)}
+/* 履歴 */
+.hm{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.hm:first-of-type{border-top:none;padding-top:0;margin-top:0}
+.hkid{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--c);font-size:14px}
+.hkid .amt{margin-left:auto;color:var(--tx);font-variant-numeric:tabular-nums}
+.hrow{display:flex;gap:8px;font-size:12.5px;padding:2px 0;color:var(--tx2)}
+.hrow .v{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--tx)}
+.xrow{display:flex;gap:6px;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.xrow .r{color:var(--tx2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xrow .v{font-variant-numeric:tabular-nums;font-weight:600}
 </style>
 </head>
 <body>
@@ -97,7 +130,7 @@ svg{display:block}
 <div class="hd">
   <div>
     <h1>勉強で稼ぐ</h1>
-    <select class="psel" id="selP" onchange="changePeriod(+this.value)"></select>
+    <select class="psel" id="selP" onchange="changePeriod(this.value)"></select>
   </div>
   <div class="pill" id="pill" onclick="resync()">⚙️ 未接続</div>
 </div>
@@ -107,11 +140,16 @@ svg{display:block}
 
   <div id="cards"></div>
 
+  <div class="card" id="cardFb">
+    <h2 id="fbTitle">勉強分析</h2>
+    <div id="fbBody"></div>
+  </div>
+
   <div class="card">
     <h2>記録する</h2>
     <div class="fld">
       <label>日付</label>
-      <input type="date" id="fDate">
+      <input type="date" id="fDate" onchange="updTgHint()">
     </div>
     <div class="grid2">
       <div class="fld">
@@ -120,7 +158,7 @@ svg{display:block}
         <div class="pre" id="preYume"></div>
       </div>
       <div class="fld">
-        <label><span style="color:var(--yuki)">●</span> 結輝 の勉強時間</label>
+        <label><span style="color:var(--yuki)">●</span> 結輝 の勉強時間<span id="tgYuki" style="color:var(--tx3)"></span></label>
         <input type="number" id="fYuki" step="0.25" min="0" max="8" placeholder="0">
         <div class="pre" id="preYuki"></div>
       </div>
@@ -157,11 +195,21 @@ svg{display:block}
       </div>
       <button class="btn sec" onclick="connect()">接続して同期</button>
       <button class="btn sec" onclick="exportJson()">JSON書き出し</button>
-      <button class="btn dgr" onclick="askReset()">全データ削除（旧チャレンジの精算済みデータを消す）</button>
-      <div class="note" style="margin-top:8px">正本はスプレッドシート。端末には表示用のキャッシュだけ持つ</div>
+      <button class="btn dgr" onclick="askReset()">勉強記録を全削除（旧チャレンジの精算済みデータを消す）</button>
+      <div class="note" style="margin-top:8px" id="syncNote">正本はスプレッドシート。端末には表示用のキャッシュだけ持つ</div>
     </details>
   </div>
 
+</div></div>
+
+<!-- ============ 履歴 ============ -->
+<div class="page" id="pgHist"><div class="wrap">
+  <div class="card">
+    <h2>月別 お小遣い一覧</h2>
+    <div class="scroll"><table id="tblHist"></table></div>
+    <div class="note" style="margin-top:8px">記録分＝勉強記録から自動計算した額（10円単位切り上げ）＋調整額。臨時＝記録以外のお小遣い。✓＝記録分 支給済み。今月は見込み</div>
+  </div>
+  <div id="histMonths"></div>
 </div></div>
 
 <!-- ============ 計画 ============ -->
@@ -182,7 +230,12 @@ svg{display:block}
   <div class="card" id="cardBoost">
     <h2>日次ブースト（長期休みルール）</h2>
     <div class="scroll"><table id="tblBoost"></table></div>
-    <div class="note" style="margin-top:8px">その日の勉強時間が閾値を超えるたびに加算。月の合計とは<b>別枠</b>で計算する。まとめて集中した日が評価される</div>
+    <div class="note" style="margin-top:8px">長期休みの日だけ、その日の勉強時間が閾値を超えるたびに加算。月の合計とは<b>別枠</b>で計算する</div>
+  </div>
+  <div class="card" id="cardTarget">
+    <h2>勉強目標（曜日別）</h2>
+    <div class="scroll"><table id="tblTarget"></table></div>
+    <div class="note" style="margin-top:8px" id="tgNote"></div>
   </div>
   <div class="card">
     <h2>満額に必要な勉強量</h2>
@@ -196,13 +249,23 @@ svg{display:block}
 
 <div class="tabs">
   <button class="on" id="tbHome" onclick="tab('Home')"><i>💰</i>実績</button>
+  <button id="tbHist" onclick="tab('Hist')"><i>📅</i>履歴</button>
   <button id="tbPlan" onclick="tab('Plan')"><i>📋</i>計画</button>
 </div>
 
+<!-- 確認モーダル -->
 <div class="modal" id="modal"><div class="box">
   <div id="mdTx" style="font-size:14px;margin-bottom:14px"></div>
   <button class="btn dgr" id="mdOk">実行する</button>
   <button class="btn sec" onclick="closeModal()">やめる</button>
+</div></div>
+
+<!-- 入力フォームモーダル -->
+<div class="modal" id="fmodal"><div class="box">
+  <h2 id="fmTitle" style="color:var(--tx)"></h2>
+  <div id="fmBody"></div>
+  <button class="btn" id="fmOk">保存する</button>
+  <button class="btn sec" onclick="closeForm()">やめる</button>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -210,8 +273,12 @@ svg{display:block}
 <script>
 /* =========================================================
    設定
-   - KIDS_META : 子どもの固定情報（期間によらない）
-   - PERIODS   : 月ごとのパラメータ。新しい月はここに1つ足すだけ
+   - KIDS_META   : 子どもの固定情報
+   - TERM_RULE   : 学期中の本則（設計案v5 4章）。明示定義のない月はこれで自動生成
+   - BREAK_BOOST : 冬休み・春休みの日次ブースト（設計案v5 5章）
+   - BREAKS      : 長期休みの期間。日付が決まったら追加するだけ
+   - PROMOTIONS  : 進級時の固定給アップ（設計案v5 8章）
+   - EXPLICIT    : 特例の月（日割りなど）。ここにある月は自動生成より優先
    ========================================================= */
 const KIDS_META = {
   yume: { name:'結愛', grade:'高2', color:'var(--yume)', hex:'#f472b6' },
@@ -219,85 +286,142 @@ const KIDS_META = {
 };
 const KEYS = Object.keys(KIDS_META);
 
+const FIRST_MONTH   = '2026-08';   // セレクターに出す最初の月
+const HISTORY_FROM  = '2026-09';   // 履歴に出す最初の月（本運用開始）
+const STD_HOURS     = { yume:50, yuki:35 };  // 標準ライン（30日あたり・設計案v5 4章）
+
+const TERM_RULE = {
+  dailyMax: 6,
+  presets: [0.5,1,1.5,2,3,4],
+  kids: {
+    yume: { fixed:2000, tiers:[{upto:30,rate:60},{upto:50,rate:90},{upto:null,rate:120}], studyCap:5500 },
+    yuki: { fixed:1200, tiers:[{upto:20,rate:50},{upto:35,rate:70},{upto:null,rate:90}],  studyCap:3600 }
+  }
+};
+const BREAK_BOOST = {
+  dailyMax: 8,
+  kids: {
+    yume: { boost:[{thr:3,amt:80},{thr:4,amt:80},{thr:6,amt:100}], boostCap:1200 },
+    yuki: { boost:[{thr:2,amt:60},{thr:3,amt:60},{thr:5,amt:80}],  boostCap:900 }
+  }
+};
+// 例：{ from:'2026-12-25', to:'2027-01-07', label:'冬休み' }  ※学校の日程が確定したら追加
+const BREAKS = [];
+const PROMOTIONS = [
+  { from:'2027-04', kids:{ yume:{ fixedAdd:500, grade:'高3' }, yuki:{ fixedAdd:500, grade:'中3' } } }
+];
+
+/* 勉強目標（曜日別・時間）。支給額には影響しない。表示と分析に使う
+   week の並びは 日,月,火,水,木,金,土。from 以降に適用（新しい計画は配列に追加） */
+const TARGETS = {
+  yuki: [
+    { from:'2026-09-21', src:'2026-09-21 メール「結輝の勉強計画（自宅学習）」',
+      week:[6, 3, 3, 3.5, 3, 0.5, 5],
+      notes:['部活なし','部活あり','部活あり','塾あり・部活なし','部活あり','塾あり・部活あり','部活あり（AM半日）'] }
+  ]
+};
+function targetPlan(kid, d){
+  const L=(TARGETS[kid]||[]).filter(t=>d>=t.from).sort((a,b)=>a.from<b.from?1:-1);
+  return L[0]||null;
+}
+function targetFor(kid, d){
+  const t=targetPlan(kid,d); return t ? t.week[new Date(d+'T00:00:00').getDay()] : null;
+}
+
+const EXPLICIT = {
+  '2026-08': {
+    mode:'長期休みVer', start:'2026-08-15', end:'2026-08-31',
+    prorate:'17/31（月の途中開始のため日割り）',
+    dailyMax:8, presets:[1,2,3,4,5,6],
+    boostRanges:[['2026-08-15','2026-08-31']],
+    kids:{
+      yume:{ fixed:1100, tiers:[{upto:16,rate:60},{upto:27,rate:90},{upto:null,rate:120}], studyCap:4300,
+             boost:[{thr:3,amt:80},{thr:4,amt:80},{thr:6,amt:100}], boostCap:2100 },
+      yuki:{ fixed:660,  tiers:[{upto:11,rate:50},{upto:19,rate:70},{upto:null,rate:90}],  studyCap:2800,
+             boost:[{thr:2,amt:60},{thr:3,amt:60},{thr:5,amt:80}], boostCap:1600 }
+    }
+  }
+};
+
 const RULES_BASE = [
   '計上は15分（0.25時間）単位。1回15分未満は数えない',
   '「ながら勉強」は計上しない。スマホは別室に置く',
   '学校の授業・塾の授業時間は含めない',
   '記録は本人がつける。虚偽の申告があった月は歩合ゼロ',
-  '月末締め、支給は毎月末',
+  '月末締め、支給は毎月末。翌月1日から新しい月としてゼロから集計',
   '固定給・単価・閾値は一度決めたら下げない（＝同じ勉強時間でもらえる額は減らない）',
   '増額は「固定給を上げる」「単価を上げる」「上限を上げる」「支給項目を足す」のいずれか'
 ];
 
-const PERIODS = [
-  {
-    id: '2026-08',
-    label: '2026年8月',
-    mode: '長期休みVer',
-    start: '2026-08-15',
-    end:   '2026-08-31',
-    payday:'8/31（月末）',
-    days:  17,
-    prorate:'17/31（月の途中開始のため日割り）',
-    dailyMax: 8,
-    presets: [1,2,3,4,5,6],
-    kids: {
-      yume: { fixed:1100,
-              tiers:[ {upto:16,rate:60}, {upto:27,rate:90}, {upto:null,rate:120} ],
-              studyCap:4300,
-              boost:[ {thr:3,amt:80}, {thr:4,amt:80}, {thr:6,amt:100} ], boostCap:2100 },
-      yuki: { fixed:660,
-              tiers:[ {upto:11,rate:50}, {upto:19,rate:70}, {upto:null,rate:90} ],
-              studyCap:2800,
-              boost:[ {thr:2,amt:60}, {thr:3,amt:60}, {thr:5,amt:80} ], boostCap:1600 }
-    }
-  },
-  {
-    id: '2026-09',
-    label: '2026年9月',
-    mode: '学期中Ver',
-    start: '2026-09-01',
-    end:   '2026-09-30',
-    payday:'9/30（月末）',
-    days:  30,
-    prorate:'なし（本則）',
-    dailyMax: 6,
-    presets: [0.5,1,1.5,2,3,4],
-    kids: {
-      yume: { fixed:2000,
-              tiers:[ {upto:30,rate:60}, {upto:50,rate:90}, {upto:null,rate:120} ],
-              studyCap:5500,
-              boost:[], boostCap:0 },
-      yuki: { fixed:1200,
-              tiers:[ {upto:20,rate:50}, {upto:35,rate:70}, {upto:null,rate:90} ],
-              studyCap:3600,
-              boost:[], boostCap:0 }
+/* =========================================================
+   日付ユーティリティ
+   ========================================================= */
+const z2 = n => String(n).padStart(2,'0');
+function ymd(d){ return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate()); }
+function todayStr(){ return ymd(new Date()); }
+function curYm(){ return todayStr().slice(0,7); }
+function addMonth(ym, n){ const [y,m]=ym.split('-').map(Number); const d=new Date(y, m-1+n, 1); return d.getFullYear()+'-'+z2(d.getMonth()+1); }
+function lastDay(ym){ const [y,m]=ym.split('-').map(Number); return new Date(y, m, 0).getDate(); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)+1; }
+function dayList(s,e){ const out=[]; let d=new Date(s+'T00:00:00'); const E=new Date(e+'T00:00:00'); while(d<=E){ out.push(ymd(d)); d.setDate(d.getDate()+1); } return out; }
+function ymLabel(ym){ const [y,m]=ym.split('-'); return y+'年'+Number(m)+'月'; }
+function wd(d){ return ['日','月','火','水','木','金','土'][new Date(d+'T00:00:00').getDay()]; }
+function isWE(d){ const w=new Date(d+'T00:00:00').getDay(); return w===0||w===6; }
+
+/* =========================================================
+   期間（月）の生成
+   ========================================================= */
+const _PC = {};
+function getPeriod(ym){
+  if(_PC[ym]) return _PC[ym];
+  let P;
+  if(EXPLICIT[ym]){
+    P = JSON.parse(JSON.stringify(EXPLICIT[ym]));
+  } else {
+    const start=ym+'-01', end=ym+'-'+z2(lastDay(ym));
+    const ranges = BREAKS.filter(b=> b.from<=end && b.to>=start)
+                         .map(b=>[b.from<start?start:b.from, b.to>end?end:b.to, b.label]);
+    P = { start, end, prorate:'なし（本則）',
+          mode: ranges.length ? '学期中＋長期休み' : '学期中Ver',
+          dailyMax: ranges.length ? BREAK_BOOST.dailyMax : TERM_RULE.dailyMax,
+          presets: TERM_RULE.presets.slice(),
+          boostRanges: ranges.map(r=>[r[0],r[1]]),
+          breakLabel: ranges.map(r=>r[2]+'（'+r[0].slice(5).replace('-','/')+'〜'+r[1].slice(5).replace('-','/')+'）').join('、'),
+          kids:{} };
+    for(const k of KEYS){
+      const base = JSON.parse(JSON.stringify(TERM_RULE.kids[k]));
+      base.boost = ranges.length ? BREAK_BOOST.kids[k].boost.slice() : [];
+      base.boostCap = ranges.length ? BREAK_BOOST.kids[k].boostCap : 0;
+      P.kids[k] = base;
     }
   }
-];
-
-/* 選択中の期間 */
-let PIDX = 0;
-let CONFIG = null;
-function applyPeriod(i){
-  PIDX = Math.max(0, Math.min(PERIODS.length-1, i));
-  const p = PERIODS[PIDX];
-  CONFIG = JSON.parse(JSON.stringify(p));
-  CONFIG.title = p.label + '分（' + p.mode + '）';
-  CONFIG.rules = RULES_BASE.slice();
-  CONFIG.rules.splice(2, 0, '1日' + p.dailyMax + '時間まで');
-  for(const k of KEYS) Object.assign(CONFIG.kids[k], KIDS_META[k]);
-  CONFIG.hasBoost = KEYS.some(k => CONFIG.kids[k].boostCap > 0);
+  P.id = ym; P.label = ymLabel(ym);
+  P.days = daysBetween(P.start, P.end);
+  P.payday = Number(ym.slice(5))+'/'+Number(P.end.slice(8))+'（月末）';
+  P.boostRanges = P.boostRanges || [];
+  for(const k of KEYS){
+    const meta = Object.assign({}, KIDS_META[k]);
+    if(!EXPLICIT[ym]){
+      for(const pr of PROMOTIONS){ if(ym>=pr.from && pr.kids[k]){ P.kids[k].fixed += pr.kids[k].fixedAdd||0; if(pr.kids[k].grade) meta.grade=pr.kids[k].grade; } }
+    }
+    Object.assign(P.kids[k], meta);
+  }
+  P.hasBoost = KEYS.some(k=>P.kids[k].boostCap>0);
+  P.title = P.label+'分（'+P.mode+'）';
+  P.rules = RULES_BASE.slice();
+  P.rules.splice(2,0,'1日'+P.dailyMax+'時間まで');
+  return (_PC[ym]=P);
 }
-
-const LS_DATA = 'study_earn_v2';
-const LS_API  = 'study_earn_api';
-const LS_PIDX = 'study_earn_period';
+function monthList(from){
+  const out=[]; let m=from; const last=curYm()>FIRST_MONTH?curYm():FIRST_MONTH;
+  while(m<=last){ out.push(m); m=addMonth(m,1); }
+  return out;
+}
+function isClosed(P){ return todayStr()>P.end; }
 
 /* =========================================================
    計算ロジック
    ========================================================= */
-// 超過累進の勉強歩合（上限適用前）
 function studyPayRaw(H, tiers){
   let tot=0, prev=0;
   for(const t of tiers){
@@ -307,144 +431,288 @@ function studyPayRaw(H, tiers){
   }
   return tot;
 }
-// 現在の累計時間における「次の1時間」の単価
 function marginalRate(H, tiers){
   for(const t of tiers){ if(t.upto===null || H < t.upto) return t.rate; }
   return tiers[tiers.length-1].rate;
 }
-// その日のブースト額
-function dayBoost(d, steps){
-  return steps.reduce((s,x)=> (d>=x.thr ? s+x.amt : s), 0);
-}
-// 10円単位で切り上げ
+function dayBoost(d, steps){ return steps.reduce((s,x)=> (d>=x.thr ? s+x.amt : s), 0); }
+function inBoost(P, d){ return P.boostRanges.some(r=> d>=r[0] && d<=r[1]); }
+function boostOf(P, k, d, h){ return inBoost(P,d) ? dayBoost(h, P.kids[k].boost) : 0; }
 function ceil10(v){ return Math.ceil(v/10)*10; }
+function inP(P, d){ return d>=P.start && d<=P.end; }
+function hoursForCap(c){ let h=0; while(studyPayRaw(h,c.tiers)<c.studyCap && h<500) h+=0.25; return h; }
 
-// 期間内の全記録から1人分の集計を作る
-function calc(kid, records){
-  const c = CONFIG.kids[kid];
+function calcP(P, kid, records){
+  const c=P.kids[kid];
   let hours=0, boostRaw=0;
   for(const [d,r] of Object.entries(records)){
-    if(!inRange(d)) continue;
-    const h = Number(r[kid])||0;
-    if(h<=0) continue;
-    hours += h;
-    boostRaw += dayBoost(h, c.boost);
+    if(!inP(P,d)) continue;
+    const h=Number(r[kid])||0; if(h<=0) continue;
+    hours+=h; boostRaw+=boostOf(P,kid,d,h);
   }
-  const sRaw  = studyPayRaw(hours, c.tiers);
-  const study = Math.min(sRaw, c.studyCap);
-  const boost = Math.min(boostRaw, c.boostCap);
-  const total = c.fixed + study + boost;
-  return {
-    hours, sRaw, study, boostRaw, boost, total,
-    payout: ceil10(total),
-    fixed: c.fixed,
-    studyCap: c.studyCap, boostCap: c.boostCap,
-    max: c.fixed + c.studyCap + c.boostCap,
-    nextRate: (sRaw >= c.studyCap) ? 0 : marginalRate(hours, c.tiers)
-  };
+  const sRaw=studyPayRaw(hours,c.tiers);
+  const study=Math.min(sRaw,c.studyCap), boost=Math.min(boostRaw,c.boostCap);
+  const total=c.fixed+study+boost;
+  return { hours, sRaw, study, boostRaw, boost, total, payout:ceil10(total), fixed:c.fixed,
+           studyCap:c.studyCap, boostCap:c.boostCap, max:c.fixed+c.studyCap+c.boostCap,
+           nextRate:(sRaw>=c.studyCap)?0:marginalRate(hours,c.tiers) };
+}
+function calc(kid, records){ return calcP(CONFIG, kid, records); }
+
+/* 月の確定額（記録分＋調整＋臨時） */
+function monthSummary(ym, kid){
+  const P=getPeriod(ym), r=calcP(P,kid,DATA.records);
+  const m=getMonthly(ym,kid);
+  const ex=DATA.extras.filter(x=>x.month===ym && x.kid===kid);
+  const extra=ex.reduce((a,x)=>a+(Number(x.amount)||0),0);
+  const record=r.payout+(Number(m.adjust)||0);
+  return { P, r, m, ex, extra, record, total:record+extra };
+}
+function getMonthly(ym,kid){
+  return DATA.monthly.find(x=>x.month===ym && x.kid===kid) || {month:ym,kid,adjust:0,adjustNote:'',paid:false,paidDate:''};
+}
+
+/* =========================================================
+   勉強分析（ルールベースのフィードバック）
+   ========================================================= */
+function analyze(ym, kid){
+  const P=getPeriod(ym), c=P.kids[kid], t=todayStr();
+  const closed=isClosed(P);
+  const endEff = closed ? P.end : (t<P.start ? null : t);
+  const days = endEff ? dayList(P.start, endEff) : [];
+  const hs = days.map(d=> Number((DATA.records[d]||{})[kid])||0);
+  const H = hs.reduce((a,b)=>a+b,0);
+  const n = days.length;
+  const studyDays = hs.filter(h=>h>0).length;
+  const zeroDays = n - studyDays;
+  let maxStreak=0, cur=0; hs.forEach(h=>{ cur = h>0?cur+1:0; maxStreak=Math.max(maxStreak,cur); });
+  let best={d:null,h:0}; days.forEach((d,i)=>{ if(hs[i]>best.h) best={d,h:hs[i]}; });
+  const wdH=[],weH=[]; days.forEach((d,i)=> (isWE(d)?weH:wdH).push(hs[i]));
+  const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+  const half=Math.floor(n/2);
+  const h1=avg(hs.slice(0,half)), h2=avg(hs.slice(half));
+  const std = STD_HOURS[kid]*P.days/30;
+  // 目標（曜日別）
+  const tg = days.map(d=>targetFor(kid,d));
+  const hasTg = tg.some(v=>v!==null);
+  const tgH = tg.reduce((a,v)=>a+(v||0),0);
+  const Htg = hs.reduce((a,h,i)=>a+(tg[i]!==null?h:0),0);   // 目標の適用日だけの勉強時間
+  const tgMonth = dayList(P.start,P.end).reduce((a,d)=>a+(targetFor(kid,d)||0),0);
+  const tgDays = tg.filter(v=>v>0).length;
+  const tgHit = tg.filter((v,i)=>v>0 && hs[i]>=v).length;
+  const dowR={}; days.forEach((d,i)=>{ if(tg[i]>0){ const w=wd(d); (dowR[w]=dowR[w]||[]).push(hs[i]/tg[i]); } });
+  const dowAvg=Object.entries(dowR).filter(([w,a])=>a.length>=2).map(([w,a])=>[w,a.reduce((x,y)=>x+y,0)/a.length]).sort((a,b)=>a[1]-b[1]);
+  const capH = hoursForCap(c);
+  const r = calcP(P,kid,DATA.records);
+  const prevYm = addMonth(ym,-1);
+  // 前月比：締め済みは前月合計と、進行中は前月の同じ日数分と比べる（本運用前の月は比較しない）
+  let prevH = null;
+  if(prevYm>=HISTORY_FROM){
+    const pP=getPeriod(prevYm);
+    const pDays=dayList(pP.start,pP.end).slice(0, closed?undefined:Math.max(n,0));
+    prevH = pDays.reduce((a,d)=>a+(Number((DATA.records[d]||{})[kid])||0),0);
+  }
+  const proj = (!closed && n>0) ? H*P.days/n : H;
+  const projPay = (()=>{ const sR=studyPayRaw(proj,c.tiers); return ceil10(c.fixed+Math.min(sR,c.studyCap)+r.boost); })();
+
+  const msgs=[];
+  const p1 = x => Math.round(x*10)/10;
+  const ret = ()=>({Htg,P,closed,n,H,studyDays,zeroDays,maxStreak,best,std,capH,proj,projPay,prevH,msgs,r,hasTg,tgH,tgMonth,tgDays,tgHit});
+  if(n===0){ msgs.push({t:'tip',s:'まだこの月は始まっていない'}); return ret(); }
+  if(hasTg && tgH>0){
+    const ach=Htg/tgH, span=(tg[0]===null)?`（${targetPlan(kid,P.end).from.slice(5).replace('-','/')}以降）`:'';
+    if(ach>=1) msgs.push({t:'good',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
+    else if(ach>=0.7) msgs.push({t:'tip',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
+    else msgs.push({t:'warn',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
+    if(tgDays>=3) msgs.push({t: tgHit/tgDays>=0.6?'good':'warn', s:`その日の目標を達成した日：${tgDays}日中${tgHit}日`});
+    if(dowAvg.length>=2 && dowAvg[0][1]<0.6) msgs.push({t:'warn',s:`${dowAvg[0][0]}曜日が目標の${Math.round(dowAvg[0][1]*100)}%と一番届いていない`});
+  }
+  const base = closed ? H : proj;
+  const judge = closed || n>=7;   // 月初7日未満はペース判定しない
+  // 良かった点
+  if(judge && base>=capH) msgs.push({t:'good',s:`勉強歩合の上限（${hh(capH)}h）に${closed?'到達':'届くペース'}`});
+  else if(judge && !hasTg && base>=std) msgs.push({t:'good',s:`標準ライン（${hh(p1(std))}h）を${closed?'達成':'超えるペース'}`});
+  if(n>=7 && studyDays/n>=0.8) msgs.push({t:'good',s:`${n}日中${studyDays}日勉強。ほぼ毎日続いている`});
+  if(maxStreak>=7) msgs.push({t:'good',s:`最長${maxStreak}日連続で勉強`});
+  if(best.h>=3) msgs.push({t:'good',s:`一番やった日：${best.d.slice(5).replace('-','/')}（${wd(best.d)}）${hh(best.h)}h`});
+  if(prevH!==null && prevH>0 && H>prevH && n>=7) msgs.push({t:'good',s:`前月より +${hh(p1(H-prevH))}h（${Math.round((H/prevH-1)*100)}%増）${closed?'':'・同期比'}`});
+  // 課題
+  if(judge && !hasTg && base<std*0.7) msgs.push({t:'warn',s:`標準ライン（${hh(p1(std))}h）の${Math.round(base/std*100)}%${closed?'':'ペース'}`});
+  if(n>=7 && zeroDays/n>=1/3) msgs.push({t:'warn',s:`0時間の日が${zeroDays}日（${Math.round(zeroDays/n*100)}%）`});
+  if(n>=10 && h1>0 && h2<h1*0.7) msgs.push({t:'warn',s:`後半に失速（前半 1日${hh(p1(h1))}h → 後半 ${hh(p1(h2))}h）`});
+  if(n>=10 && h2>h1*1.3 && h2>0) msgs.push({t:'good',s:`後半に伸びた（前半 1日${hh(p1(h1))}h → 後半 ${hh(p1(h2))}h）`});
+  if(weH.length>=2 && wdH.length>=2 && avg(weH)<avg(wdH)*0.8) msgs.push({t:'warn',s:`休日（1日${hh(p1(avg(weH)))}h）が平日（${hh(p1(avg(wdH)))}h）より少ない`});
+  if(prevH!==null && prevH>0 && H<prevH*0.9 && n>=7) msgs.push({t:'warn',s:`前月より −${hh(p1(prevH-H))}h${closed?'':'（同期比）'}`});
+  // 次への提案
+  if(closed){
+    const nP=getPeriod(addMonth(ym,1)), nc=nP.kids[kid], nCap=hoursForCap(nc);
+    const nStd=STD_HOURS[kid]*nP.days/30;
+    let goal = Math.ceil(Math.max(nStd, H*1.1)*2)/2; goal=Math.min(goal, nCap);
+    const pay = ceil10(nc.fixed+Math.min(studyPayRaw(goal,nc.tiers),nc.studyCap));
+    if(!hasTg) msgs.push({t:'tip',s:`来月の目標：${hh(goal)}h（1日平均${hh(p1(goal/nP.days))}h）→ 見込み ${yen(pay)}円`});
+  } else {
+    const left = P.days-n;
+    msgs.push({t:'tip',s:`このペースだと月末 ${hh(p1(proj))}h → ${yen(projPay)}円の見込み`});
+    if(left>0 && H<capH && !hasTg){
+      const tgt = H<std ? std : capH;
+      msgs.push({t:'tip',s:`${H<std?'標準ライン':'上限'}まであと${hh(p1(tgt-H))}h（残り${left}日・1日${hh(p1((tgt-H)/left))}h）`});
+    }
+  }
+  if(n>=7 && zeroDays/n>=1/3) msgs.push({t:'tip',s:'0時間の日を作らない。15分だけでも記録すると連続日数が伸びる'});
+  if(weH.length>=2 && wdH.length>=2 && avg(weH)<avg(wdH)*0.8) msgs.push({t:'tip',s:'休日にまとめて1〜2h足すのが一番伸ばしやすい'});
+  if(hasTg && !closed){ const td=targetFor(kid,t); if(td) msgs.push({t:'tip',s:`今日（${wd(t)}）の目標：${hh(td)}h`}); }
+  if(hasTg && closed){ const nm=addMonth(ym,1), nt=dayList(nm+'-01', nm+'-'+z2(lastDay(nm))).reduce((a,d)=>a+(targetFor(kid,d)||0),0);
+    if(nt>0) msgs.push({t:'tip',s:`来月の計画どおりなら合計${hh(nt)}h`}); }
+  return ret();
+}
+function memoTop(ym){
+  const P=getPeriod(ym), cnt={};
+  for(const [d,r] of Object.entries(DATA.records)){
+    if(!inP(P,d) || !r.memo) continue;
+    String(r.memo).split(/[／\/、,，・\s]+/).map(s=>s.trim()).filter(s=>s.length>=2).forEach(w=>cnt[w]=(cnt[w]||0)+1);
+  }
+  return Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+}
+function fbHtml(ym){
+  let s='';
+  for(const k of KEYS){
+    const a=analyze(ym,k), c=a.P.kids[k];
+    s+=`<div class="fbk" style="--c:${c.color}">
+      <div class="hkid" style="--c:${c.color}">${c.name}</div>
+      <div class="kpi">
+        <div><b>${hh(a.H)}h</b><span>${a.closed?'合計':'ここまで'}</span></div>
+        <div><b>${a.studyDays}/${a.n}日</b><span>勉強した日</span></div>
+        <div><b>${a.maxStreak}日</b><span>最長連続</span></div>
+        ${a.hasTg && a.tgH>0
+          ? `<div><b>${Math.round(a.Htg/a.tgH*100)}%</b><span>目標達成率</span></div>`
+          : `<div><b>${a.prevH===null?'—':((a.H-a.prevH>=0?'+':'')+hh(Math.round((a.H-a.prevH)*10)/10)+'h')}</b><span>${a.closed?'前月比':'前月同期比'}</span></div>`}
+      </div>
+      <ul class="fbl">${a.msgs.map(m=>`<li class="${m.t}">${esc(m.s)}</li>`).join('')}</ul>
+    </div>`;
+  }
+  const mt=memoTop(ym);
+  if(mt.length) s+=`<div class="note" style="margin-top:10px">メモに多かった内容：${mt.map(([w,n])=>esc(w)+'（'+n+'）').join('、')}</div>`;
+  return s;
 }
 
 /* =========================================================
    状態
    ========================================================= */
-let DATA = {records:{}};
+let DATA = {records:{}, extras:[], monthly:[]};
 let API  = '';
-let EDIT = null;
+let CONFIG = null;
+let XSUPPORT = null;   // GAS拡張API（x_*）の対応状況 null=未確認 true/false
 
-function inRange(d){ return d>=CONFIG.start && d<=CONFIG.end; }
-function todayStr(){
-  const t=new Date(); const z=n=>String(n).padStart(2,'0');
-  return t.getFullYear()+'-'+z(t.getMonth()+1)+'-'+z(t.getDate());
-}
+const LS_DATA = 'study_earn_v2';
+const LS_API  = 'study_earn_api';
+
+function yen(v){ return Math.round(v).toLocaleString('ja-JP'); }
+function sgn(v){ return (v>0?'+':v<0?'−':'')+yen(Math.abs(v)); }
+function hh(v){ return (Math.round(v*100)/100).toFixed(2).replace(/\.?0+$/,''); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function inRange(d){ return inP(CONFIG,d); }
 function daysLeft(){
   const t=todayStr();
   if(t>CONFIG.end) return 0;
-  const s = t<CONFIG.start ? CONFIG.start : t;
-  return Math.round((new Date(CONFIG.end)-new Date(s))/86400000)+1;
+  const s=t<CONFIG.start?CONFIG.start:t;
+  return daysBetween(s, CONFIG.end);
 }
-function yen(v){ return Math.round(v).toLocaleString('ja-JP'); }
-function hh(v){ return (Math.round(v*100)/100).toFixed(2).replace(/\.?0+$/,''); }
-function wd(d){ return ['日','月','火','水','木','金','土'][new Date(d+'T00:00:00').getDay()]; }
 
 /* =========================================================
-   描画
+   描画（実績）
    ========================================================= */
 function render(){
   const sel=document.getElementById('selP');
-  sel.innerHTML = PERIODS.map((p,i)=>
-    `<option value="${i}"${i===PIDX?' selected':''}>${p.label}・${p.mode.replace('Ver','')} ${p.start.slice(5).replace('-','/')}-${p.end.slice(5).replace('-','/')}</option>`
-  ).join('');
+  sel.innerHTML = monthList(FIRST_MONTH).slice().reverse().map(ym=>{
+    const P=getPeriod(ym), st = isClosed(P) ? '締め済み' : (todayStr()>=P.start ? '進行中' : '予定');
+    return `<option value="${ym}"${ym===CONFIG.id?' selected':''}>${P.label}・${P.mode.replace('Ver','')}（${st}）</option>`;
+  }).join('');
   document.getElementById('inputNote').textContent =
     `15分（0.25時間）単位。1日${CONFIG.dailyMax}時間まで。学校・塾の授業時間は含めない`;
   const fd=document.getElementById('fDate');
   fd.min=CONFIG.start; fd.max=CONFIG.end;
-  for(const k of KEYS){
-    const el=document.getElementById('f'+k[0].toUpperCase()+k.slice(1));
-    if(el) el.max=CONFIG.dailyMax;
-  }
+  for(const k of KEYS){ const el=document.getElementById('f'+cap1(k)); if(el) el.max=CONFIG.dailyMax; }
   document.getElementById('cardBoost').style.display = CONFIG.hasBoost ? '' : 'none';
+  updTgHint();
+  const closed=isClosed(CONFIG);
 
-  // --- サマリーカード ---
   let html='';
   for(const k of KEYS){
     const c=CONFIG.kids[k], r=calc(k,DATA.records);
-    const pS = Math.min(100, r.sRaw / c.studyCap*100);
-    const pB = c.boostCap>0 ? Math.min(100, r.boostRaw / c.boostCap*100) : 0;
-    html += `
+    const ms=monthSummary(CONFIG.id,k);
+    const pS=Math.min(100, r.sRaw/c.studyCap*100);
+    const pB=c.boostCap>0?Math.min(100, r.boostRaw/c.boostCap*100):0;
+    html+=`
     <div class="card kid" style="--c:${c.color}">
       <div class="kidhd">
         <span class="kidname">${c.name}</span>
         <span class="kidgrade">${c.grade}</span>
+        ${closed?'<span class="tag warn">締め済み</span>':''}
         <span style="margin-left:auto;font-size:11px;color:var(--tx3)">満額 ${yen(r.max)}円</span>
       </div>
       <div class="total">${yen(r.payout)}<small>円</small></div>
-      <div class="tsub">支給見込み（${CONFIG.payday} 支給・10円単位切り上げ）</div>
-
+      <div class="tsub">${closed?'確定（記録分）':'支給見込み'}（${CONFIG.payday} 支給・10円単位切り上げ）${(ms.m.adjust||ms.extra)?`<br>調整 ${sgn(ms.m.adjust||0)}円・臨時 ${sgn(ms.extra)}円 → 今月の合計 <b style="color:var(--tx)">${yen(ms.total)}円</b>`:''}</div>
       <div class="brk">
-        <div class="brow"><span class="lb">固定給</span>
-          <span class="cap">期間固定</span>
-          <span class="vl">${yen(r.fixed)}円</span></div>
-
-        <div class="brow"><span class="lb">勉強歩合</span>
-          <span class="cap">${yen(r.sRaw)} / 上限 ${yen(c.studyCap)}</span>
+        <div class="brow"><span class="lb">固定給</span><span class="cap">期間固定</span><span class="vl">${yen(r.fixed)}円</span></div>
+        <div class="brow"><span class="lb">勉強歩合</span><span class="cap">${yen(r.sRaw)} / 上限 ${yen(c.studyCap)}</span>
           <span class="vl" style="color:${r.sRaw>=c.studyCap?'var(--warn)':'inherit'}">${yen(r.study)}円</span></div>
         <div class="bar"><i style="width:${pS}%;background:${c.color}"></i></div>
-
-        ${ c.boostCap>0 ? `
-        <div class="brow" style="margin-top:8px"><span class="lb">日次ブースト</span>
-          <span class="cap">${yen(r.boostRaw)} / 上限 ${yen(c.boostCap)}</span>
+        ${c.boostCap>0?`
+        <div class="brow" style="margin-top:8px"><span class="lb">日次ブースト</span><span class="cap">${yen(r.boostRaw)} / 上限 ${yen(c.boostCap)}</span>
           <span class="vl" style="color:${r.boostRaw>=c.boostCap?'var(--warn)':'inherit'}">${yen(r.boost)}円</span></div>
-        <div class="bar"><i style="width:${pB}%;background:var(--ok)"></i></div>` : '' }
+        <div class="bar"><i style="width:${pB}%;background:var(--ok)"></i></div>`:''}
       </div>
-
+      ${tgCardHtml(k)}
       <div class="mini">
         <div><b>${hh(r.hours)}<span style="font-size:10px"> h</span></b><span>累計 勉強時間</span></div>
         <div><b>${hh(r.hours/CONFIG.days)}<span style="font-size:10px"> h</span></b><span>1日平均</span></div>
         <div><b>${daysLeft()}<span style="font-size:10px"> 日</span></b><span>残り</span></div>
       </div>
-
-      <div class="next">
-        ${ r.nextRate>0
-           ? `いま追加で1時間やると <b>+${yen(r.nextRate)}円</b>　<span style="color:var(--tx3)">（勉強歩合の単価）</span>`
-           : ( c.boostCap>0 && r.boost<c.boostCap
-               ? `<span style="color:var(--warn)">勉強歩合は上限に到達。日次ブーストで${yen(c.boostCap-r.boost)}円ぶんまだ伸ばせる</span>`
-               : `<span style="color:var(--warn)">この月は満額に到達。おつかれさま</span>` ) }
-      </div>
+      ${closed
+        ? `<div class="closed">この月は締め済み。記録を直すと確定額も再計算される。支給済みのチェックは「履歴」で</div>`
+        : `<div class="next">${ r.nextRate>0
+            ? `いま追加で1時間やると <b>+${yen(r.nextRate)}円</b>　<span style="color:var(--tx3)">（勉強歩合の単価）</span>`
+            : ( c.boostCap>0 && r.boost<c.boostCap
+                ? `<span style="color:var(--warn)">勉強歩合は上限に到達。日次ブーストで${yen(c.boostCap-r.boost)}円ぶんまだ伸ばせる</span>`
+                : `<span style="color:var(--warn)">この月は満額に到達。おつかれさま</span>` ) }</div>`}
     </div>`;
   }
-  document.getElementById('cards').innerHTML = html;
+  document.getElementById('cards').innerHTML=html;
 
-  drawBar(); drawLine(); drawTable(); drawPlan();
+  const a0=analyze(CONFIG.id,KEYS[0]);
+  document.getElementById('fbTitle').textContent = closed
+    ? `${CONFIG.label}の勉強分析（月次フィードバック）`
+    : `${CONFIG.label}の勉強分析（途中経過・${a0.n}/${CONFIG.days}日）`;
+  document.getElementById('fbBody').innerHTML = fbHtml(CONFIG.id);
+
+  drawBar(); drawLine(); drawTable(); drawPlan(); drawHist();
 }
+function tgCardHtml(k){
+  const days=dayList(CONFIG.start, CONFIG.end);
+  const tgMonth=days.reduce((a,d)=>a+(targetFor(k,d)||0),0);
+  if(!tgMonth) return '';
+  const t=todayStr(), upto=days.filter(d=>d<=t);
+  const tgNow=upto.reduce((a,d)=>a+(targetFor(k,d)||0),0);
+  const H=calc(k,DATA.records).hours, c=CONFIG.kids[k];
+  const td=inRange(t)?targetFor(k,t):null, th=Number((DATA.records[t]||{})[k])||0;
+  const p=Math.min(100,H/tgMonth*100), pn=Math.min(100,tgNow/tgMonth*100);
+  return `<div class="brk">
+    <div class="brow"><span class="lb">勉強目標</span><span class="cap">今日まで ${hh(tgNow)}h／月 ${hh(tgMonth)}h</span>
+      <span class="vl" style="color:${H>=tgNow?'var(--ok)':'var(--warn)'}">${hh(H)}h（${tgNow?Math.round(H/tgNow*100):0}%）</span></div>
+    <div class="bar" style="position:relative"><i style="width:${p}%;background:${c.color}"></i>
+      <span style="position:absolute;left:${pn}%;top:-2px;width:2px;height:9px;background:var(--tx)"></span></div>
+    ${td!==null?`<div class="brow"><span class="lb">今日（${wd(t)}）</span><span class="cap">目標 ${hh(td)}h</span>
+      <span class="vl" style="color:${th>=td?'var(--ok)':'inherit'}">${hh(th)}h${th>=td?' 達成':''}</span></div>`:''}
+  </div>`;
+}
+function cap1(k){ return k[0].toUpperCase()+k.slice(1); }
 
 /* --- 日別 棒グラフ --- */
 function drawBar(){
-  const days=[]; let d=new Date(CONFIG.start+'T00:00:00'); const e=new Date(CONFIG.end+'T00:00:00');
-  while(d<=e){ const z=n=>String(n).padStart(2,'0');
-    days.push(d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())); d.setDate(d.getDate()+1); }
-  const W=Math.max(days.length*34+40, 320), H=170, pad={l:26,r:8,t:10,b:26};
-  let max=CONFIG.dailyMax;
-  const y=v=> pad.t + (H-pad.t-pad.b)*(1-v/max);
+  const days=dayList(CONFIG.start, CONFIG.end);
+  const W=Math.max(days.length*34+40,320), H=170, pad={l:26,r:8,t:10,b:26};
+  const max=CONFIG.dailyMax;
+  const y=v=> pad.t+(H-pad.t-pad.b)*(1-v/max);
   let s=`<svg width="${W}" height="${H}">`;
   for(let g=0; g<=max; g+=2){
     s+=`<line x1="${pad.l}" y1="${y(g)}" x2="${W-pad.r}" y2="${y(g)}" stroke="#334155" stroke-width="1"/>`;
@@ -452,27 +720,21 @@ function drawBar(){
   }
   const bw=(W-pad.l-pad.r)/days.length;
   days.forEach((dt,i)=>{
-    const x0=pad.l+bw*i, rec=DATA.records[dt]||{};
-    const w=(bw-6)/2;
-    const dow=new Date(dt+'T00:00:00').getDay();
-    if(dow===0||dow===6) s+=`<rect x="${x0}" y="${pad.t}" width="${bw}" height="${H-pad.t-pad.b}" fill="#38bdf8" opacity=".05"/>`;
+    const x0=pad.l+bw*i, rec=DATA.records[dt]||{}, w=(bw-6)/2;
+    if(isWE(dt)) s+=`<rect x="${x0}" y="${pad.t}" width="${bw}" height="${H-pad.t-pad.b}" fill="#38bdf8" opacity=".05"/>`;
     KEYS.forEach((k,j)=>{
       const v=Number(rec[k])||0; if(v<=0) return;
-      const col = KIDS_META[k].hex;
-      s+=`<rect x="${x0+3+w*j}" y="${y(Math.min(v,max))}" width="${w}" height="${H-pad.b-y(Math.min(v,max))}" fill="${col}" rx="2"/>`;
+      s+=`<rect x="${x0+3+w*j}" y="${y(Math.min(v,max))}" width="${w}" height="${H-pad.b-y(Math.min(v,max))}" fill="${KIDS_META[k].hex}" rx="2"/>`;
     });
     if(dt===todayStr()) s+=`<circle cx="${x0+bw/2}" cy="${H-pad.b+9}" r="2.5" fill="#34d399"/>`;
     s+=`<text x="${x0+bw/2}" y="${H-pad.b+16}" fill="#64748b" font-size="9" text-anchor="middle">${dt.slice(8)}</text>`;
   });
-  s+=`</svg>`;
-  document.getElementById('chartBar').innerHTML=s;
+  document.getElementById('chartBar').innerHTML=s+`</svg>`;
 }
 
 /* --- 累計 折れ線 --- */
 function drawLine(){
-  const days=[]; let d=new Date(CONFIG.start+'T00:00:00'); const e=new Date(CONFIG.end+'T00:00:00');
-  while(d<=e){ const z=n=>String(n).padStart(2,'0');
-    days.push(d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())); d.setDate(d.getDate()+1); }
+  const days=dayList(CONFIG.start, CONFIG.end);
   const W=document.getElementById('chartLine').clientWidth||320, H=170, pad={l:38,r:8,t:10,b:24};
   const maxV=Math.max(...KEYS.map(k=>calc(k,DATA.records).max));
   const y=v=> pad.t+(H-pad.t-pad.b)*(1-v/maxV);
@@ -483,56 +745,47 @@ function drawLine(){
     s+=`<text x="2" y="${y(g)+4}" fill="#64748b" font-size="9">${g/1000}千</text>`;
   }
   for(const k of KEYS){
-    const c=CONFIG.kids[k], col = KIDS_META[k].hex;
-    s+=`<line x1="${pad.l}" y1="${y(c.fixed+c.studyCap+c.boostCap)}" x2="${W-pad.r}" y2="${y(c.fixed+c.studyCap+c.boostCap)}" stroke="${col}" stroke-dasharray="3 3" opacity=".45"/>`;
-    let acc={}; let pts=[];
-    days.forEach((dt,i)=>{
-      acc[dt]=DATA.records[dt];
-      const sub={}; days.slice(0,i+1).forEach(dd=>{ if(DATA.records[dd]) sub[dd]=DATA.records[dd]; });
-      pts.push([x(i), y(calc(k,sub).total)]);
-    });
+    const c=CONFIG.kids[k], col=KIDS_META[k].hex, mx=c.fixed+c.studyCap+c.boostCap;
+    s+=`<line x1="${pad.l}" y1="${y(mx)}" x2="${W-pad.r}" y2="${y(mx)}" stroke="${col}" stroke-dasharray="3 3" opacity=".45"/>`;
+    const pts=[], sub={};
+    days.forEach((dt,i)=>{ if(DATA.records[dt]) sub[dt]=DATA.records[dt]; pts.push([x(i), y(calc(k,sub).total)]); });
     s+=`<polyline fill="none" stroke="${col}" stroke-width="2" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
   }
-  s+=`</svg>`;
-  document.getElementById('chartLine').innerHTML=s;
+  document.getElementById('chartLine').innerHTML=s+`</svg>`;
 }
 
 /* --- 記録一覧 --- */
 function drawTable(){
   const ds=Object.keys(DATA.records).filter(inRange).sort().reverse();
   let s=`<thead><tr><th>日付</th>`;
-  for(const k of KEYS){ const c=CONFIG.kids[k];
-    s+=`<th class="n" style="color:${c.color}">${c.name}</th>`; }
+  for(const k of KEYS) s+=`<th class="n" style="color:${CONFIG.kids[k].color}">${CONFIG.kids[k].name}</th>`;
   s+=`<th>メモ</th><th></th></tr></thead><tbody>`;
   if(!ds.length) s+=`<tr><td colspan="5" style="color:var(--tx3);text-align:center;padding:16px">まだ記録がありません</td></tr>`;
   for(const d of ds){
-    const r=DATA.records[d], dow=new Date(d+'T00:00:00').getDay();
-    const cls=(d===todayStr()?'today':(dow===0||dow===6?'we':''));
+    const r=DATA.records[d];
+    const cls=(d===todayStr()?'today':(isWE(d)?'we':''));
     s+=`<tr class="${cls}"><td>${d.slice(5).replace('-','/')}<span style="color:var(--tx3)">(${wd(d)})</span></td>`;
     for(const k of KEYS){
-      const c=CONFIG.kids[k], h=Number(r[k])||0, b=dayBoost(h,c.boost);
+      const h=Number(r[k])||0, b=boostOf(CONFIG,k,d,h);
       s+=`<td class="n">${h?hh(h)+'h':'—'}${b?`<br><span style="font-size:10px;color:var(--ok)">+${b}</span>`:''}</td>`;
     }
-    s+=`<td style="color:var(--tx2);font-size:11px">${(r.memo||'').slice(0,14)}</td>`;
+    s+=`<td style="color:var(--tx2);font-size:11px">${esc((r.memo||'').slice(0,14))}</td>`;
     s+=`<td style="white-space:nowrap"><span class="act" onclick="edit('${d}')">編集</span><span class="act" onclick="askDel('${d}')">削除</span></td></tr>`;
   }
-  s+=`</tbody>`;
-  document.getElementById('tbl').innerHTML=s;
+  document.getElementById('tbl').innerHTML=s+`</tbody>`;
 }
 
 /* --- 計画タブ --- */
 function drawPlan(){
   document.getElementById('tblPeriod').innerHTML = `
     <tr><th>対象期間</th><td>${CONFIG.start} 〜 ${CONFIG.end}（${CONFIG.days}日間）</td></tr>
-    <tr><th>締め・支給</th><td>月末締め／${CONFIG.payday} 支給</td></tr>
+    <tr><th>締め・支給</th><td>月末締め／${CONFIG.payday} 支給。翌月1日から自動でリセット</td></tr>
     <tr><th>日割り</th><td>${CONFIG.prorate}</td></tr>
-    <tr><th>この期間の版</th><td>長期休みVer（日次ブーストあり）</td></tr>`;
-
+    <tr><th>この期間の版</th><td>${CONFIG.mode}${CONFIG.breakLabel?'<br><span class="note">'+esc(CONFIG.breakLabel)+'</span>':''}</td></tr>`;
   const bs=CONFIG.hasBoost;
   let s=`<thead><tr><th></th><th class="n">固定給</th><th class="n">勉強歩合<br>上限</th>${bs?'<th class="n">ブースト<br>上限</th>':''}<th class="n">満額</th></tr></thead><tbody>`;
   for(const k of KEYS){ const c=CONFIG.kids[k];
-    s+=`<tr><td style="color:${c.color};font-weight:700">${c.name}</td>
-        <td class="n">${yen(c.fixed)}</td><td class="n">${yen(c.studyCap)}</td>
+    s+=`<tr><td style="color:${c.color};font-weight:700">${c.name}</td><td class="n">${yen(c.fixed)}</td><td class="n">${yen(c.studyCap)}</td>
         ${bs?`<td class="n">${yen(c.boostCap)}</td>`:''}<td class="n"><b>${yen(c.fixed+c.studyCap+c.boostCap)}</b></td></tr>`; }
   s+=`<tr><td style="color:var(--tx3)">2人合計</td><td class="n"></td><td class="n"></td>${bs?'<td class="n"></td>':''}
       <td class="n"><b>${yen(KEYS.reduce((a,k)=>{const c=CONFIG.kids[k];return a+c.fixed+c.studyCap+c.boostCap;},0))}</b></td></tr></tbody>`;
@@ -545,13 +798,12 @@ function drawPlan(){
         <th class="n">単価</th><th class="n">この階層で<br>もらえる額</th></tr></thead><tbody>`;
     let prev=0;
     c.tiers.forEach((t,i)=>{
-      const lbl = (t.upto===null) ? `${prev}h 超〜` : (i===0 ? `0h 〜 ${t.upto}h` : `${prev}h 超〜 ${t.upto}h`);
-      const amt = (t.upto===null) ? '上限まで' : yen((t.upto-prev)*t.rate)+'円';
+      const lbl=(t.upto===null)?`${prev}h 超〜`:(i===0?`0h 〜 ${t.upto}h`:`${prev}h 超〜 ${t.upto}h`);
+      const amt=(t.upto===null)?'上限まで':yen((t.upto-prev)*t.rate)+'円';
       s+=`<tr><td>${lbl}</td><td class="n" style="font-weight:600">${t.rate}円/h</td><td class="n" style="color:var(--tx3)">${amt}</td></tr>`;
-      prev = t.upto || prev;
+      prev=t.upto||prev;
     });
-    s+=`<tr><td colspan="2" style="color:var(--tx3)">勉強歩合の上限</td><td class="n" style="color:var(--warn);font-weight:600">${yen(c.studyCap)}円</td></tr>`;
-    s+=`</tbody>`;
+    s+=`<tr><td colspan="2" style="color:var(--tx3)">勉強歩合の上限</td><td class="n" style="color:var(--warn);font-weight:600">${yen(c.studyCap)}円</td></tr></tbody>`;
   }
   document.getElementById('tblTier').innerHTML=s;
 
@@ -564,51 +816,194 @@ function drawPlan(){
       s+=`<td class="n" style="${b?'color:var(--ok);font-weight:600':'color:var(--tx3)'}">${b?'+'+b+'円':'—'}</td>`; }
     s+=`</tr>`;
   }
-  s+=`</tbody>`;
-  document.getElementById('tblBoost').innerHTML=s;
+  document.getElementById('tblBoost').innerHTML=s+`</tbody>`;
 
-  s=`<thead><tr><th></th><th class="n">勉強歩合の<br>上限まで</th>${bs?'<th class="n">毎日ムラなく<br>満額</th><th class="n">集中型で<br>満額</th>':''}</tr></thead><tbody>`;
+  const bDays = CONFIG.boostRanges.reduce((a,r)=>a+daysBetween(r[0],r[1]),0);
+  s=`<thead><tr><th></th><th class="n">勉強歩合の<br>上限まで</th>${bs?'<th class="n">集中型で<br>ブースト満額</th>':''}</tr></thead><tbody>`;
   for(const k of KEYS){
-    const c=CONFIG.kids[k];
-    let h=0; while(studyPayRaw(h,c.tiers)<c.studyCap) h+=0.25;
+    const c=CONFIG.kids[k], h=hoursForCap(c);
     let extra='';
     if(bs && c.boostCap>0){
-      let dd=0, guard=0;
-      while(guard++<200){ dd+=0.25; if(studyPayRaw(CONFIG.days*dd,c.tiers)>=c.studyCap && CONFIG.days*dayBoost(dd,c.boost)>=c.boostCap) break; }
-      const perDayMax=c.boost.reduce((a,x)=>a+x.amt,0);
-      const topThr=c.boost[c.boost.length-1].thr;
+      const perDayMax=c.boost.reduce((a,x)=>a+x.amt,0), topThr=c.boost[c.boost.length-1].thr;
       const nDays=Math.ceil(c.boostCap/perDayMax);
-      extra=`<td class="n">1日${hh(dd)}h</td>
-             <td class="n">${topThr}h×${nDays}日<br><span style="font-size:10px;color:var(--tx3)">＝計${topThr*nDays}h</span></td>`;
-    } else if(bs){ extra='<td class="n">—</td><td class="n">—</td>'; }
+      extra=`<td class="n">${topThr}h×${nDays}日<br><span style="font-size:10px;color:var(--tx3)">休み${bDays}日のうち</span></td>`;
+    } else if(bs) extra='<td class="n">—</td>';
     s+=`<tr><td style="color:${c.color};font-weight:700">${c.name}</td>
-        <td class="n">計${hh(h)}h<br><span style="font-size:10px;color:var(--tx3)">1日${hh(h/CONFIG.days)}h</span></td>
-        ${extra}</tr>`;
+        <td class="n">計${hh(h)}h<br><span style="font-size:10px;color:var(--tx3)">1日${hh(h/CONFIG.days)}h</span></td>${extra}</tr>`;
   }
-  s+=`</tbody>`;
-  document.getElementById('tblMax').innerHTML=s;
-
+  document.getElementById('tblMax').innerHTML=s+`</tbody>`;
+  // 勉強目標
+  const tk=KEYS.filter(k=>targetPlan(k,CONFIG.end));
+  document.getElementById('cardTarget').style.display = tk.length ? '' : 'none';
+  if(tk.length){
+    const order=[1,2,3,4,5,6,0], W=['日','月','火','水','木','金','土'];
+    let t=`<thead><tr><th>曜日</th>`;
+    for(const k of tk) t+=`<th class="n" style="color:${KIDS_META[k].color}">${KIDS_META[k].name}</th><th>予定</th>`;
+    t+=`</tr></thead><tbody>`;
+    for(const i of order){
+      t+=`<tr class="${i===0||i===6?'we':''}"><td>${W[i]}</td>`;
+      for(const k of tk){ const p=targetPlan(k,CONFIG.end); t+=`<td class="n" style="font-weight:600">${hh(p.week[i])}h</td><td style="font-size:11px;color:var(--tx2)">${esc((p.notes||[])[i]||'')}</td>`; }
+      t+=`</tr>`;
+    }
+    t+=`<tr class="sum"><td>週合計</td>`;
+    for(const k of tk){ const p=targetPlan(k,CONFIG.end); t+=`<td class="n">${hh(p.week.reduce((a,b)=>a+b,0))}h</td><td></td>`; }
+    t+=`</tr></tbody>`;
+    document.getElementById('tblTarget').innerHTML=t;
+    document.getElementById('tgNote').innerHTML = tk.map(k=>{
+      const p=targetPlan(k,CONFIG.end), mt=dayList(CONFIG.start,CONFIG.end).reduce((a,d)=>a+(targetFor(k,d)||0),0);
+      return `${KIDS_META[k].name}：${CONFIG.label}の目標合計 ${hh(mt)}h（勉強歩合の上限は${hh(hoursForCap(CONFIG.kids[k]))}hで到達）。出典：${esc(p.src)}。適用開始 ${p.from}`;
+    }).join('<br>') + '<br>目標は表示と分析用。支給額の計算には影響しない';
+  }
   document.getElementById('rules').innerHTML = CONFIG.rules.map((r,i)=>`${i+1}. ${r}`).join('<br>');
 }
 
 /* =========================================================
-   入力・保存
+   履歴タブ
+   ========================================================= */
+function drawHist(){
+  const months=monthList(HISTORY_FROM).slice().reverse();
+  const cur=curYm();
+  // 一覧表
+  let s=`<thead><tr><th rowspan="2">月</th>`;
+  for(const k of KEYS) s+=`<th class="c" colspan="3" style="color:${KIDS_META[k].color}">${KIDS_META[k].name}</th>`;
+  s+=`</tr><tr>`;
+  for(const k of KEYS) s+=`<th class="n">記録分</th><th class="n">臨時</th><th class="n">計</th>`;
+  s+=`</tr></thead><tbody>`;
+  const tot={}; KEYS.forEach(k=>tot[k]={record:0,extra:0,total:0});
+  for(const ym of months){
+    const isCur=!isClosed(getPeriod(ym));
+    s+=`<tr class="${isCur?'cur':''}"><td style="white-space:nowrap">${Number(ym.slice(5))}月<span style="color:var(--tx3);font-size:10px">${ym.slice(2,4)}</span>${isCur?'<br><span style="font-size:9.5px;color:var(--ok)">見込み</span>':''}</td>`;
+    for(const k of KEYS){
+      const m=monthSummary(ym,k);
+      tot[k].record+=m.record; tot[k].extra+=m.extra; tot[k].total+=m.total;
+      s+=`<td class="n">${yen(m.record)}${m.m.paid?'<span style="color:var(--ok)">✓</span>':''}</td>
+          <td class="n" style="color:${m.extra?'var(--tx)':'var(--tx3)'}">${m.extra?yen(m.extra):'—'}</td>
+          <td class="n"><b>${yen(m.total)}</b></td>`;
+    }
+    s+=`</tr>`;
+  }
+  s+=`<tr class="sum"><td>累計</td>`;
+  for(const k of KEYS) s+=`<td class="n">${yen(tot[k].record)}</td><td class="n">${yen(tot[k].extra)}</td><td class="n">${yen(tot[k].total)}</td>`;
+  s+=`</tr></tbody>`;
+  document.getElementById('tblHist').innerHTML=s;
+
+  // 月ごとのカード
+  let h='';
+  for(const ym of months){
+    const P=getPeriod(ym), closed=isClosed(P);
+    h+=`<div class="card"><h2 style="color:var(--tx);display:flex;align-items:center">${P.label}
+        <span class="tag ${closed?'':'ok'}">${closed?'締め済み':'進行中'}</span>
+        <span class="tag">${esc(P.mode)}</span></h2>`;
+    for(const k of KEYS){
+      const m=monthSummary(ym,k), c=P.kids[k];
+      h+=`<div class="hm" style="--c:${c.color}">
+        <div class="hkid">${c.name}<span class="tag">${c.grade}</span>
+          ${m.m.paid?`<span class="tag ok">支給済み${m.m.paidDate?' '+m.m.paidDate.slice(5).replace('-','/'):''}</span>`:(closed?'<span class="tag warn">未支給</span>':'')}
+          <span class="amt">${yen(m.total)}円</span></div>
+        <div class="hrow">勉強時間<span class="v">${hh(m.r.hours)}h</span></div>
+        <div class="hrow">記録に基づく額（自動計算）<span class="v">${yen(m.r.payout)}円</span></div>
+        ${m.m.adjust?`<div class="hrow">調整額${m.m.adjustNote?'（'+esc(m.m.adjustNote)+'）':''}<span class="v">${sgn(m.m.adjust)}円</span></div>`:''}
+        <div class="hrow" style="color:var(--tx)">記録分 小計<span class="v"><b>${yen(m.record)}円</b></span></div>
+        <div class="hrow" style="margin-top:4px">臨時お小遣い（${m.ex.length}件）<span class="v">${yen(m.extra)}円</span></div>
+        ${m.ex.sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>`
+          <div class="xrow"><span style="color:var(--tx3);font-variant-numeric:tabular-nums">${x.date?x.date.slice(5).replace('-','/'):'--/--'}</span>
+            <span class="r">${esc(x.reason||'（理由なし）')}</span><span class="v">${sgn(Number(x.amount)||0)}円</span>
+            <span class="act" onclick="formExtra('${ym}','${k}','${x.id}')">編集</span><span class="act" onclick="askDelExtra('${x.id}')">削除</span></div>`).join('')}
+        <div class="btns">
+          <button class="sbtn pri" onclick="formExtra('${ym}','${k}')">＋臨時を追加</button>
+          <button class="sbtn" onclick="formMonthly('${ym}','${k}')">調整・支給を編集</button>
+          <button class="sbtn" onclick="openMonth('${ym}')">日別記録を見る</button>
+        </div>
+      </div>`;
+    }
+    h+=`<details${ym===addMonth(cur,-1)?' open':''}><summary>${closed?'月次フィードバック':'途中経過の分析'}</summary>${fbHtml(ym)}</details></div>`;
+  }
+  document.getElementById('histMonths').innerHTML=h;
+}
+function openMonth(ym){ changePeriod(ym, true); tab('Home'); }
+
+/* --- 臨時お小遣いフォーム --- */
+function formExtra(ym, kid, id){
+  const P=getPeriod(ym);
+  const x = id ? DATA.extras.find(e=>e.id===id) : null;
+  const t=todayStr(), defD = x ? x.date : (t>=P.start && t<=P.end ? t : P.end);
+  const kidSel = x
+    ? `<select id="xKid">${KEYS.map(k=>`<option value="${k}"${k===x.kid?' selected':''}>${KIDS_META[k].name}</option>`).join('')}</select>`
+    : `<select id="xKid">${KEYS.map(k=>`<option value="${k}"${k===kid?' selected':''}>${KIDS_META[k].name}</option>`).join('')}<option value="both">2人とも（同額）</option></select>`;
+  openForm(`${P.label}の臨時お小遣い${x?'を編集':'を追加'}`, `
+    <div class="fld"><label>だれに</label>${kidSel}</div>
+    <div class="fld"><label>日付</label><input type="date" id="xDate" value="${defD}" min="${P.start}" max="${P.end}"></div>
+    <div class="fld"><label>金額（円）※差し引きはマイナス</label><input type="number" id="xAmt" step="10" value="${x?x.amount:''}" placeholder="1000">
+      <div class="pre">${[500,1000,2000,3000,5000].map(v=>`<button type="button" onclick="document.getElementById('xAmt').value=${v}">${yen(v)}</button>`).join('')}</div></div>
+    <div class="fld"><label>理由</label><input type="text" id="xReason" maxlength="100" value="${x?esc(x.reason||''):''}" placeholder="テスト高得点／お年玉／部活の遠征 など"></div>`,
+  ()=>{
+    const d=document.getElementById('xDate').value, amt=Math.round(Number(document.getElementById('xAmt').value));
+    const who=document.getElementById('xKid').value, reason=document.getElementById('xReason').value.trim();
+    if(!d || !inP(P,d)){ toast(P.label+'の日付を入れて'); return false; }
+    if(!amt){ toast('金額を入れて'); return false; }
+    const kids = who==='both' ? KEYS : [who];
+    kids.forEach(k=>{
+      const item={ id: x?x.id:newId(), month:ym, kid:k, date:d, amount:amt, reason };
+      const i=DATA.extras.findIndex(e=>e.id===item.id);
+      if(i>=0) DATA.extras[i]=item; else DATA.extras.push(item);
+      xpush({action:'x_extra_save', item});
+    });
+    persist(); render(); toast('保存しました'); return true;
+  });
+}
+function askDelExtra(id){
+  const x=DATA.extras.find(e=>e.id===id); if(!x) return;
+  openModal(`${KIDS_META[x.kid].name}の臨時お小遣い「${x.reason||'理由なし'}」${yen(x.amount)}円を削除する`, ()=>{
+    DATA.extras=DATA.extras.filter(e=>e.id!==id); persist(); render();
+    xpush({action:'x_extra_delete', id}); toast('削除しました');
+  });
+}
+/* --- 調整・支給フォーム --- */
+function formMonthly(ym, kid){
+  const P=getPeriod(ym), m=getMonthly(ym,kid), r=calcP(P,kid,DATA.records);
+  openForm(`${P.label} ${KIDS_META[kid].name}：記録分の調整・支給`, `
+    <div class="note" style="margin-bottom:10px">自動計算額 <b style="color:var(--tx)">${yen(r.payout)}円</b>（${hh(r.hours)}h）</div>
+    <div class="fld"><label>調整額（円）※減額はマイナス</label><input type="number" id="mAdj" step="10" value="${m.adjust||0}"></div>
+    <div class="fld"><label>調整の理由</label><input type="text" id="mNote" maxlength="100" value="${esc(m.adjustNote||'')}" placeholder="記録漏れ分の補填／手伝い歩合 など"></div>
+    <div class="fld"><label><input type="checkbox" id="mPaid"${m.paid?' checked':''}>記録分を支給済み</label></div>
+    <div class="fld"><label>支給日</label><input type="date" id="mPaidDate" value="${m.paidDate||''}"></div>`,
+  ()=>{
+    const paid=document.getElementById('mPaid').checked;
+    let pd=document.getElementById('mPaidDate').value;
+    if(paid && !pd) pd=todayStr();
+    const item={ month:ym, kid, adjust:Math.round(Number(document.getElementById('mAdj').value)||0),
+                 adjustNote:document.getElementById('mNote').value.trim(), paid, paidDate: paid?pd:'' };
+    const i=DATA.monthly.findIndex(x=>x.month===ym && x.kid===kid);
+    if(i>=0) DATA.monthly[i]=item; else DATA.monthly.push(item);
+    xpush({action:'x_monthly_save', item});
+    persist(); render(); toast('保存しました'); return true;
+  });
+}
+function newId(){ return 'x'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
+
+/* =========================================================
+   入力・保存（勉強記録）
    ========================================================= */
 function buildPresets(){
   for(const k of KEYS){
-    const el=document.getElementById('pre'+k[0].toUpperCase()+k.slice(1));
-    el.innerHTML = CONFIG.presets.map(v=>`<button type="button" onclick="setP('${k}',${v})">${v}h</button>`).join('');
+    document.getElementById('pre'+cap1(k)).innerHTML =
+      CONFIG.presets.map(v=>`<button type="button" onclick="setP('${k}',${v})">${v}h</button>`).join('');
   }
 }
-function setP(k,v){ document.getElementById('f'+k[0].toUpperCase()+k.slice(1)).value=v; }
+function updTgHint(){
+  const d=document.getElementById('fDate').value;
+  for(const k of KEYS){ const el=document.getElementById('tg'+cap1(k)); if(!el) continue;
+    const v=d?targetFor(k,d):null; el.textContent = v!==null ? `（目標 ${hh(v)}h）` : ''; }
+}
+function setP(k,v){ document.getElementById('f'+cap1(k)).value=v; }
 
 function save(){
   const d=document.getElementById('fDate').value;
   if(!d){ toast('日付を入れて'); return; }
-  if(!inRange(d)){ toast('この期間（'+CONFIG.start+'〜'+CONFIG.end+'）の日付だけ'); return; }
+  if(!inRange(d)){ toast('この月（'+CONFIG.start+'〜'+CONFIG.end+'）の日付だけ'); return; }
   const rec={memo:document.getElementById('fMemo').value.trim()};
   for(const k of KEYS){
-    let v=Number(document.getElementById('f'+k[0].toUpperCase()+k.slice(1)).value)||0;
+    let v=Number(document.getElementById('f'+cap1(k)).value)||0;
     if(v<0) v=0;
     if(v>CONFIG.dailyMax){ v=CONFIG.dailyMax; toast('1日'+CONFIG.dailyMax+'時間が上限'); }
     rec[k]=Math.round(v*4)/4;
@@ -617,18 +1012,19 @@ function save(){
   persist(); render();
   push({action:'save', date:d, yume:rec.yume, yuki:rec.yuki, memo:rec.memo});
   document.getElementById('fMemo').value='';
-  for(const k of KEYS) document.getElementById('f'+k[0].toUpperCase()+k.slice(1)).value='';
+  for(const k of KEYS) document.getElementById('f'+cap1(k)).value='';
   toast('保存しました');
 }
 function edit(d){
   const r=DATA.records[d]; if(!r) return;
   document.getElementById('fDate').value=d;
-  for(const k of KEYS) document.getElementById('f'+k[0].toUpperCase()+k.slice(1)).value=r[k]||'';
+  for(const k of KEYS) document.getElementById('f'+cap1(k)).value=r[k]||'';
   document.getElementById('fMemo').value=r.memo||'';
-  window.scrollTo({top:document.getElementById('cards').offsetHeight, behavior:'smooth'});
+  updTgHint();
+  document.getElementById('fDate').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function askDel(d){ openModal(d+' の記録を削除する', ()=>{ delete DATA.records[d]; persist(); render(); push({action:'delete',date:d}); toast('削除しました'); }); }
-function askReset(){ openModal('すべての記録を削除する。旧チャレンジ（ドル建て）の精算済みデータもまとめて消える。元に戻せない', ()=>{ DATA.records={}; persist(); render(); push({action:'reset'}); toast('全削除しました'); }); }
+function askReset(){ openModal('勉強記録をすべて削除する（臨時お小遣い・調整は残る）。元に戻せない', ()=>{ DATA.records={}; persist(); render(); push({action:'reset'}); toast('全削除しました'); }); }
 
 function openModal(tx, fn){
   document.getElementById('mdTx').textContent=tx;
@@ -636,40 +1032,76 @@ function openModal(tx, fn){
   document.getElementById('mdOk').onclick=()=>{ fn(); closeModal(); };
 }
 function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+function openForm(title, body, onOk){
+  document.getElementById('fmTitle').textContent=title;
+  document.getElementById('fmBody').innerHTML=body;
+  document.getElementById('fmodal').classList.add('on');
+  document.getElementById('fmOk').onclick=()=>{ if(onOk()!==false) closeForm(); };
+}
+function closeForm(){ document.getElementById('fmodal').classList.remove('on'); }
 
 /* =========================================================
-   同期（既存GAS API互換）
+   同期
+   - 勉強記録：既存GAS API（GET／save・delete・reset）
+   - 臨時・調整：GAS拡張API（x_get／x_extra_save／x_extra_delete／x_monthly_save）
    ========================================================= */
 function setPill(st){
-  const m={ok:'🟢 同期済み',sync:'🟡 同期中…',off:'🔴 オフライン',local:'⚙️ 未接続'};
+  const m={ok:'🟢 同期済み',sync:'🟡 同期中…',off:'🔴 オフライン',local:'⚙️ 未接続',part:'🟠 一部端末内'};
   document.getElementById('pill').textContent=m[st]||m.local;
 }
 function persist(){ try{ localStorage.setItem(LS_DATA, JSON.stringify(DATA)); }catch(e){} }
-
+function syncNote(){
+  const el=document.getElementById('syncNote');
+  el.textContent = !API ? '未接続：すべて端末内に保存（他の端末と共有されない）'
+    : XSUPPORT===false ? 'GASが履歴機能に未対応：臨時お小遣い・調整はこの端末内だけに保存中（GAS更新後に再保存が必要）'
+    : '正本はスプレッドシート（記録・臨時お小遣い・調整）。端末には表示用のキャッシュだけ持つ';
+}
+async function post(body){
+  const res=await fetch(API,{method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)});
+  return res.json();
+}
 async function pull(){
-  if(!API){ setPill('local'); return; }
+  if(!API){ setPill('local'); syncNote(); return; }
   setPill('sync');
   try{
-    const res=await fetch(API, {method:'GET'});
-    const j=await res.json();
-    if(j.ok){ DATA.records=j.records||{}; persist(); render(); setPill('ok'); }
-    else setPill('off');
+    const j=await (await fetch(API,{method:'GET'})).json();
+    if(!j.ok){ setPill('off'); return; }
+    DATA.records=j.records||{};
+    await xpull();
+    persist(); render(); setPill(XSUPPORT===false?'part':'ok');
   }catch(e){ setPill('off'); }
+  syncNote();
+}
+async function xpull(){
+  try{
+    const j=await post({action:'x_get'});
+    if(j && j.ok && Array.isArray(j.extras)){ DATA.extras=j.extras; DATA.monthly=j.monthly||[]; XSUPPORT=true; }
+    else XSUPPORT=false;
+  }catch(e){ XSUPPORT=false; }
 }
 async function push(body){
   if(!API){ setPill('local'); return; }
   setPill('sync');
   try{
-    const res=await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)});
-    const j=await res.json();
-    if(j.ok){ DATA.records=j.records||{}; persist(); render(); setPill('ok'); }
+    const j=await post(body);
+    if(j.ok){ DATA.records=j.records||{}; persist(); render(); setPill(XSUPPORT===false?'part':'ok'); }
     else setPill('off');
+  }catch(e){ setPill('off'); }
+}
+async function xpush(body){
+  if(!API){ setPill('local'); return; }
+  if(XSUPPORT===false){ setPill('part'); toast('GAS未対応のため端末内に保存'); return; }
+  setPill('sync');
+  try{
+    const j=await post(body);
+    if(j && j.ok && Array.isArray(j.extras)){ DATA.extras=j.extras; DATA.monthly=j.monthly||[]; XSUPPORT=true; persist(); render(); setPill('ok'); }
+    else { setPill('off'); toast('クラウド保存に失敗：'+((j&&j.error)||'不明')); }
   }catch(e){ setPill('off'); }
 }
 function connect(){
   const u=document.getElementById('fApi').value.trim();
   if(!/^https:\/\/script\.google\.com\/.*\/exec$/.test(u)){ toast('/exec で終わるURLを入れて'); return; }
-  API=u; localStorage.setItem(LS_API,u); pull(); toast('接続しました');
+  API=u; try{ localStorage.setItem(LS_API,u); }catch(e){} XSUPPORT=null; pull(); toast('接続しました');
 }
 function resync(){ pull(); }
 function exportJson(){
@@ -682,7 +1114,7 @@ function exportJson(){
    その他
    ========================================================= */
 function tab(n){
-  for(const t of ['Home','Plan']){
+  for(const t of ['Home','Hist','Plan']){
     document.getElementById('pg'+t).classList.toggle('on', t===n);
     document.getElementById('tb'+t).classList.toggle('on', t===n);
   }
@@ -695,51 +1127,36 @@ function toast(m){
   el.textContent=m; el.classList.add('on');
   clearTimeout(tmr); tmr=setTimeout(()=>el.classList.remove('on'),1800);
 }
-
-function pickPeriodForToday(){
-  const t=todayStr();
-  for(let i=0;i<PERIODS.length;i++){ if(t>=PERIODS[i].start && t<=PERIODS[i].end) return i; }
-  // 今日がどの期間にも入らない場合は、today を過ぎていない最も早い期間／無ければ最後の期間
-  for(let i=0;i<PERIODS.length;i++){ if(t<PERIODS[i].start) return i; }
-  return PERIODS.length-1;
-}
 function syncDateField(){
-  const f=document.getElementById('fDate');
-  const t=todayStr();
-  f.value = (t<CONFIG.start)?CONFIG.start : (t>CONFIG.end)?CONFIG.end : t;
+  const f=document.getElementById('fDate'), t=todayStr();
+  f.value=(t<CONFIG.start)?CONFIG.start:(t>CONFIG.end)?CONFIG.end:t;
 }
-function changePeriod(i){
-  applyPeriod(i);
-  try{ localStorage.setItem(LS_PIDX, String(PIDX)); }catch(e){}
-  buildPresets();
-  syncDateField();
-  render();
-  toast(CONFIG.title + ' に切替');
+function changePeriod(ym, quiet){
+  CONFIG=getPeriod(ym);
+  buildPresets(); syncDateField(); render();
+  if(!quiet) toast(CONFIG.title+' に切替');
+}
+/* 日付が変わったら（月をまたいだら）今月に自動で切り替える */
+let LAST_YM=curYm();
+function checkRollover(){
+  const ym=curYm();
+  if(ym!==LAST_YM){ LAST_YM=ym; changePeriod(ym, true); toast(getPeriod(addMonth(ym,-1)).label+'を締めて'+getPeriod(ym).label+'に切替'); }
 }
 
 (function init(){
   try{ const c=localStorage.getItem(LS_DATA); if(c) DATA=JSON.parse(c); }catch(e){}
   if(!DATA.records) DATA.records={};
-  API = localStorage.getItem(LS_API) || '';
+  if(!Array.isArray(DATA.extras)) DATA.extras=[];
+  if(!Array.isArray(DATA.monthly)) DATA.monthly=[];
+  try{ API=localStorage.getItem(LS_API)||''; }catch(e){}
   document.getElementById('fApi').value=API;
-
-  let idx=pickPeriodForToday();
-  try{
-    const saved=localStorage.getItem(LS_PIDX);
-    const t=todayStr();
-    // 保存された選択は「今日がどの期間にも入っていないとき」だけ尊重する
-    if(saved!==null && !PERIODS.some(p=>t>=p.start&&t<=p.end)){
-      const n=parseInt(saved,10);
-      if(!isNaN(n) && n>=0 && n<PERIODS.length) idx=n;
-    }
-  }catch(e){}
-  applyPeriod(idx);
-
-  buildPresets();
-  syncDateField();
-  render();
+  // 起動時は常に「今月」。月が変われば自動で新しい月（ゼロから）になる
+  CONFIG=getPeriod(curYm()<FIRST_MONTH?FIRST_MONTH:curYm());
+  buildPresets(); syncDateField(); render(); syncNote();
   if(API) pull(); else setPill('local');
   window.addEventListener('resize', ()=>drawLine());
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) checkRollover(); });
+  setInterval(checkRollover, 60000);
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
 </script>
