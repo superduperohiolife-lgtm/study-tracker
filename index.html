@@ -100,6 +100,11 @@ summary{cursor:pointer;font-size:12px;color:var(--tx3);padding:5px 0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + var(--safeb));background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:12.5px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
 .toast.on{opacity:1}
 svg{display:block}
+/* 記録タブ（子ども別） */
+.ktabs{display:flex;gap:6px;margin-bottom:12px;background:var(--card2);padding:4px;border-radius:11px}
+.ktabs button{flex:1;background:none;border:none;color:var(--tx3);padding:8px 0;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer}
+.ktabs button.on{background:var(--card);color:var(--c);box-shadow:inset 0 -3px 0 var(--c)}
+.kpanel{display:none}.kpanel.on{display:block}
 /* 分析フィードバック */
 .fbk{border-left:4px solid var(--c);padding-left:10px;margin-top:12px}
 .fbk:first-of-type{margin-top:0}
@@ -147,27 +152,38 @@ svg{display:block}
 
   <div class="card">
     <h2>記録する</h2>
+    <div class="ktabs" id="kTabs">
+      <button type="button" id="ktYume" onclick="setKid('yume')" style="--c:var(--yume)">結愛</button>
+      <button type="button" id="ktYuki" onclick="setKid('yuki')" style="--c:var(--yuki)">結輝</button>
+    </div>
     <div class="fld">
       <label>日付</label>
-      <input type="date" id="fDate" onchange="updTgHint()">
+      <input type="date" id="fDate" onchange="loadDate()">
     </div>
-    <div class="grid2">
+    <div class="kpanel" id="kpYume">
       <div class="fld">
-        <label><span style="color:var(--yume)">●</span> 結愛 の勉強時間</label>
+        <label><span style="color:var(--yume)">●</span> 結愛 の勉強時間<span id="tgYume" style="color:var(--tx3)"></span></label>
         <input type="number" id="fYume" step="0.25" min="0" max="8" placeholder="0">
         <div class="pre" id="preYume"></div>
       </div>
+      <div class="fld">
+        <label>結愛のメモ（任意）</label>
+        <input type="text" id="fMemoYume" placeholder="数学ワーク／英単語 など">
+      </div>
+    </div>
+    <div class="kpanel" id="kpYuki">
       <div class="fld">
         <label><span style="color:var(--yuki)">●</span> 結輝 の勉強時間<span id="tgYuki" style="color:var(--tx3)"></span></label>
         <input type="number" id="fYuki" step="0.25" min="0" max="8" placeholder="0">
         <div class="pre" id="preYuki"></div>
       </div>
+      <div class="fld">
+        <label>結輝のメモ（任意）</label>
+        <input type="text" id="fMemoYuki" placeholder="数学ワーク／英単語 など">
+      </div>
     </div>
-    <div class="fld">
-      <label>メモ（任意）</label>
-      <input type="text" id="fMemo" placeholder="数学ワーク／英単語 など">
-    </div>
-    <button class="btn" onclick="save()">保存する</button>
+    <div class="note" id="exNote" style="margin:-4px 0 8px"></div>
+    <button class="btn" id="btnSave" onclick="save()">保存する</button>
     <div class="note" style="margin-top:8px" id="inputNote"></div>
   </div>
 
@@ -285,6 +301,9 @@ const KIDS_META = {
   yuki: { name:'結輝', grade:'中2', color:'var(--yuki)', hex:'#38bdf8' }
 };
 const KEYS = Object.keys(KIDS_META);
+// メモの保存キー。従来の memo（シートD列）は結愛のメモ、結輝は memoYuki（F列）
+const MEMO_KEY = { yume:'memo', yuki:'memoYuki' };
+function memoOf(r,k){ return (r && r[MEMO_KEY[k]]) || ''; }
 
 const FIRST_MONTH   = '2026-08';   // セレクターに出す最初の月
 const HISTORY_FROM  = '2026-09';   // 履歴に出す最初の月（本運用開始）
@@ -565,11 +584,11 @@ function analyze(ym, kid){
     if(nt>0) msgs.push({t:'tip',s:`来月の計画どおりなら合計${hh(nt)}h`}); }
   return ret();
 }
-function memoTop(ym){
+function memoTop(ym, kid){
   const P=getPeriod(ym), cnt={};
   for(const [d,r] of Object.entries(DATA.records)){
-    if(!inP(P,d) || !r.memo) continue;
-    String(r.memo).split(/[／\/、,，・\s]+/).map(s=>s.trim()).filter(s=>s.length>=2).forEach(w=>cnt[w]=(cnt[w]||0)+1);
+    if(!inP(P,d) || !memoOf(r,kid)) continue;
+    String(memoOf(r,kid)).split(/[／\/、,，・\s]+/).map(s=>s.trim()).filter(s=>s.length>=2).forEach(w=>cnt[w]=(cnt[w]||0)+1);
   }
   return Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
 }
@@ -588,10 +607,9 @@ function fbHtml(ym){
           : `<div><b>${a.prevH===null?'—':((a.H-a.prevH>=0?'+':'')+hh(Math.round((a.H-a.prevH)*10)/10)+'h')}</b><span>${a.closed?'前月比':'前月同期比'}</span></div>`}
       </div>
       <ul class="fbl">${a.msgs.map(m=>`<li class="${m.t}">${esc(m.s)}</li>`).join('')}</ul>
+      ${(mt=>mt.length?`<div class="note" style="margin-top:4px">メモに多かった内容：${mt.map(([w,n])=>esc(w)+'（'+n+'）').join('、')}</div>`:'')(memoTop(ym,k))}
     </div>`;
   }
-  const mt=memoTop(ym);
-  if(mt.length) s+=`<div class="note" style="margin-top:10px">メモに多かった内容：${mt.map(([w,n])=>esc(w)+'（'+n+'）').join('、')}</div>`;
   return s;
 }
 
@@ -767,9 +785,9 @@ function drawTable(){
     s+=`<tr class="${cls}"><td>${d.slice(5).replace('-','/')}<span style="color:var(--tx3)">(${wd(d)})</span></td>`;
     for(const k of KEYS){
       const h=Number(r[k])||0, b=boostOf(CONFIG,k,d,h);
-      s+=`<td class="n">${h?hh(h)+'h':'—'}${b?`<br><span style="font-size:10px;color:var(--ok)">+${b}</span>`:''}</td>`;
+      s+=`<td class="n" style="cursor:pointer" onclick="edit('${d}','${k}')">${h?hh(h)+'h':'—'}${b?`<br><span style="font-size:10px;color:var(--ok)">+${b}</span>`:''}</td>`;
     }
-    s+=`<td style="color:var(--tx2);font-size:11px">${esc((r.memo||'').slice(0,14))}</td>`;
+    s+=`<td style="color:var(--tx2);font-size:11px">${KEYS.filter(k=>memoOf(r,k)).map(k=>`<span style="color:${CONFIG.kids[k].color}">●</span>${esc(memoOf(r,k).slice(0,14))}`).join('<br>')}</td>`;
     s+=`<td style="white-space:nowrap"><span class="act" onclick="edit('${d}')">編集</span><span class="act" onclick="askDel('${d}')">削除</span></td></tr>`;
   }
   document.getElementById('tbl').innerHTML=s+`</tbody>`;
@@ -995,32 +1013,53 @@ function updTgHint(){
   for(const k of KEYS){ const el=document.getElementById('tg'+cap1(k)); if(!el) continue;
     const v=d?targetFor(k,d):null; el.textContent = v!==null ? `（目標 ${hh(v)}h）` : ''; }
 }
+/* 子ども切替タブ（端末ごとに最後の選択を覚える） */
+let KID='yume';
+function setKid(k){
+  KID=k; try{ localStorage.setItem('study_earn_kid',k); }catch(e){}
+  for(const x of KEYS){
+    document.getElementById('kt'+cap1(x)).classList.toggle('on', x===k);
+    document.getElementById('kp'+cap1(x)).classList.toggle('on', x===k);
+  }
+  const b=document.getElementById('btnSave');
+  b.textContent=KIDS_META[k].name+'の記録を保存'; b.style.background=KIDS_META[k].hex;
+  loadDate();
+}
+/* 選んだ日付の既存記録を入力欄に読み込む（上書き事故防止） */
+function loadDate(){
+  const d=document.getElementById('fDate').value, r=DATA.records[d];
+  for(const k of KEYS){
+    document.getElementById('f'+cap1(k)).value = r && Number(r[k]) ? r[k] : '';
+    document.getElementById('fMemo'+cap1(k)).value = memoOf(r,k);
+  }
+  document.getElementById('exNote').textContent = r && (Number(r[KID])||memoOf(r,KID)) ? 'この日は記録済み。保存すると上書きされる' : '';
+  updTgHint();
+}
 function setP(k,v){ document.getElementById('f'+cap1(k)).value=v; }
 
 function save(){
   const d=document.getElementById('fDate').value;
   if(!d){ toast('日付を入れて'); return; }
   if(!inRange(d)){ toast('この月（'+CONFIG.start+'〜'+CONFIG.end+'）の日付だけ'); return; }
-  const rec={memo:document.getElementById('fMemo').value.trim()};
-  for(const k of KEYS){
-    let v=Number(document.getElementById('f'+cap1(k)).value)||0;
-    if(v<0) v=0;
-    if(v>CONFIG.dailyMax){ v=CONFIG.dailyMax; toast('1日'+CONFIG.dailyMax+'時間が上限'); }
-    rec[k]=Math.round(v*4)/4;
-  }
+  // 選択中の子どもの分だけ更新し、もう一人の記録はそのまま残す
+  const k=KID, old=DATA.records[d]||{};
+  const rec={ yume:Number(old.yume)||0, yuki:Number(old.yuki)||0, memo:old.memo||'', memoYuki:old.memoYuki||'' };
+  let v=Number(document.getElementById('f'+cap1(k)).value)||0;
+  if(v<0) v=0;
+  if(v>CONFIG.dailyMax){ v=CONFIG.dailyMax; toast('1日'+CONFIG.dailyMax+'時間が上限'); }
+  rec[k]=Math.round(v*4)/4;
+  rec[MEMO_KEY[k]]=document.getElementById('fMemo'+cap1(k)).value.trim();
   DATA.records[d]=rec;
   persist(); render();
-  push({action:'save', date:d, yume:rec.yume, yuki:rec.yuki, memo:rec.memo});
-  document.getElementById('fMemo').value='';
-  for(const k of KEYS) document.getElementById('f'+cap1(k)).value='';
-  toast('保存しました');
+  push({action:'save', kid:k, date:d, yume:rec.yume, yuki:rec.yuki, memo:rec.memo, memoYuki:rec.memoYuki});
+  loadDate();
+  toast(KIDS_META[k].name+'の記録を保存しました');
 }
-function edit(d){
-  const r=DATA.records[d]; if(!r) return;
+function edit(d, k){
+  if(!DATA.records[d]) return;
+  if(k) setKid(k);
   document.getElementById('fDate').value=d;
-  for(const k of KEYS) document.getElementById('f'+cap1(k)).value=r[k]||'';
-  document.getElementById('fMemo').value=r.memo||'';
-  updTgHint();
+  loadDate();
   document.getElementById('fDate').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function askDel(d){ openModal(d+' の記録を削除する', ()=>{ delete DATA.records[d]; persist(); render(); push({action:'delete',date:d}); toast('削除しました'); }); }
@@ -1130,6 +1169,7 @@ function toast(m){
 function syncDateField(){
   const f=document.getElementById('fDate'), t=todayStr();
   f.value=(t<CONFIG.start)?CONFIG.start:(t>CONFIG.end)?CONFIG.end:t;
+  loadDate();
 }
 function changePeriod(ym, quiet){
   CONFIG=getPeriod(ym);
@@ -1152,7 +1192,8 @@ function checkRollover(){
   document.getElementById('fApi').value=API;
   // 起動時は常に「今月」。月が変われば自動で新しい月（ゼロから）になる
   CONFIG=getPeriod(curYm()<FIRST_MONTH?FIRST_MONTH:curYm());
-  buildPresets(); syncDateField(); render(); syncNote();
+  try{ const kk=localStorage.getItem('study_earn_kid'); if(KEYS.includes(kk)) KID=kk; }catch(e){}
+  buildPresets(); render(); setKid(KID); syncDateField(); syncNote();
   if(API) pull(); else setPill('local');
   window.addEventListener('resize', ()=>drawLine());
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) checkRollover(); });
