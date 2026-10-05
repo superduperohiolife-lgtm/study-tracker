@@ -1,7 +1,7 @@
 /* 勉強で稼ぐ — Service Worker
    方針: ネットワーク優先・キャッシュはフォールバック。
    （単一HTMLアプリなので、更新が確実に届くことを優先する） */
-const CACHE = 'study-earn-v3-1';
+const CACHE = 'study-earn-v3-2';
 const ASSETS = [
   './',
   './index.html',

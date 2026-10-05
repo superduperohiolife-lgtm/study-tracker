@@ -290,7 +290,7 @@ svg{display:block}
 /* =========================================================
    設定
    - KIDS_META   : 子どもの固定情報
-   - TERM_RULE   : 学期中の本則（設計案v5 4章）。明示定義のない月はこれで自動生成
+   - TERM_RULES  : 学期中の本則（改定履歴つき）。明示定義のない月は該当する版で自動生成
    - BREAK_BOOST : 冬休み・春休みの日次ブースト（設計案v5 5章）
    - BREAKS      : 長期休みの期間。日付が決まったら追加するだけ
    - PROMOTIONS  : 進級時の固定給アップ（設計案v5 8章）
@@ -307,16 +307,24 @@ function memoOf(r,k){ return (r && r[MEMO_KEY[k]]) || ''; }
 
 const FIRST_MONTH   = '2026-08';   // セレクターに出す最初の月
 const HISTORY_FROM  = '2026-09';   // 履歴に出す最初の月（本運用開始）
-const STD_HOURS     = { yume:50, yuki:35 };  // 標準ライン（30日あたり・設計案v5 4章）
-
-const TERM_RULE = {
-  dailyMax: 6,
-  presets: [0.5,1,1.5,2,3,4],
-  kids: {
-    yume: { fixed:2000, tiers:[{upto:30,rate:60},{upto:50,rate:90},{upto:null,rate:120}], studyCap:5500 },
-    yuki: { fixed:1200, tiers:[{upto:20,rate:50},{upto:35,rate:70},{upto:null,rate:90}],  studyCap:3600 }
-  }
-};
+/* 学期中の本則（月ごとの単価表）。from 以降の月に適用。新しい改定は末尾に追加
+   std＝標準ライン（30日あたりの平均的な勉強時間。分析で使う） */
+const TERM_RULES = [
+  { from:'2026-09', label:'設計案v5', dailyMax:6, presets:[0.5,1,1.5,2,3,4],
+    std:{ yume:50, yuki:35 },
+    kids:{
+      yume:{ fixed:2000, tiers:[{upto:30,rate:60},{upto:50,rate:90},{upto:null,rate:120}], studyCap:5500 },
+      yuki:{ fixed:1200, tiers:[{upto:20,rate:50},{upto:35,rate:70},{upto:null,rate:90}],  studyCap:3600 }
+    } },
+  // 2026年10月改定：月100時間で歩合が満額、平均的な勉強時間で平均的なお小遣い額に到達
+  { from:'2026-10', label:'2026年10月改定', dailyMax:6, presets:[0.5,1,1.5,2,3,4],
+    std:{ yume:60, yuki:45 },
+    kids:{
+      yume:{ fixed:2000, tiers:[{upto:60,rate:50},{upto:90,rate:60},{upto:100,rate:70}], studyCap:5500 },
+      yuki:{ fixed:1200, tiers:[{upto:40,rate:20},{upto:70,rate:30},{upto:100,rate:60}], studyCap:3500 }
+    } }
+];
+function termRule(ym){ let r=TERM_RULES[0]; for(const t of TERM_RULES) if(ym>=t.from) r=t; return r; }
 const BREAK_BOOST = {
   dailyMax: 8,
   kids: {
@@ -368,7 +376,8 @@ const RULES_BASE = [
   '学校の授業・塾の授業時間は含めない',
   '記録は本人がつける。虚偽の申告があった月は歩合ゼロ',
   '月末締め、支給は毎月末。翌月1日から新しい月としてゼロから集計',
-  '固定給・単価・閾値は一度決めたら下げない（＝同じ勉強時間でもらえる額は減らない）',
+  '2026年10月に制度を改定（月100時間で歩合が満額になる単価表に変更）。9月分までは旧ルールで確定',
+  '固定給・単価・閾値は改定後の値から下げない（＝同じ勉強時間でもらえる額は減らない）',
   '増額は「固定給を上げる」「単価を上げる」「上限を上げる」「支給項目を足す」のいずれか'
 ];
 
@@ -402,19 +411,20 @@ function getPeriod(ym){
                          .map(b=>[b.from<start?start:b.from, b.to>end?end:b.to, b.label]);
     P = { start, end, prorate:'なし（本則）',
           mode: ranges.length ? '学期中＋長期休み' : '学期中Ver',
-          dailyMax: ranges.length ? BREAK_BOOST.dailyMax : TERM_RULE.dailyMax,
-          presets: TERM_RULE.presets.slice(),
+          dailyMax: ranges.length ? BREAK_BOOST.dailyMax : termRule(ym).dailyMax,
+          presets: termRule(ym).presets.slice(),
           boostRanges: ranges.map(r=>[r[0],r[1]]),
           breakLabel: ranges.map(r=>r[2]+'（'+r[0].slice(5).replace('-','/')+'〜'+r[1].slice(5).replace('-','/')+'）').join('、'),
           kids:{} };
     for(const k of KEYS){
-      const base = JSON.parse(JSON.stringify(TERM_RULE.kids[k]));
+      const base = JSON.parse(JSON.stringify(termRule(ym).kids[k]));
       base.boost = ranges.length ? BREAK_BOOST.kids[k].boost.slice() : [];
       base.boostCap = ranges.length ? BREAK_BOOST.kids[k].boostCap : 0;
       P.kids[k] = base;
     }
   }
   P.id = ym; P.label = ymLabel(ym);
+  P.std = termRule(ym).std; P.ruleLabel = EXPLICIT[ym] ? '特例（日割り）' : termRule(ym).label;
   P.days = daysBetween(P.start, P.end);
   P.payday = Number(ym.slice(5))+'/'+Number(P.end.slice(8))+'（月末）';
   P.boostRanges = P.boostRanges || [];
@@ -510,7 +520,7 @@ function analyze(ym, kid){
   const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
   const half=Math.floor(n/2);
   const h1=avg(hs.slice(0,half)), h2=avg(hs.slice(half));
-  const std = STD_HOURS[kid]*P.days/30;
+  const std = P.std[kid]*P.days/30;
   // 目標（曜日別）
   const tg = days.map(d=>targetFor(kid,d));
   const hasTg = tg.some(v=>v!==null);
@@ -565,7 +575,7 @@ function analyze(ym, kid){
   // 次への提案
   if(closed){
     const nP=getPeriod(addMonth(ym,1)), nc=nP.kids[kid], nCap=hoursForCap(nc);
-    const nStd=STD_HOURS[kid]*nP.days/30;
+    const nStd=nP.std[kid]*nP.days/30;
     let goal = Math.ceil(Math.max(nStd, H*1.1)*2)/2; goal=Math.min(goal, nCap);
     const pay = ceil10(nc.fixed+Math.min(studyPayRaw(goal,nc.tiers),nc.studyCap));
     if(!hasTg) msgs.push({t:'tip',s:`来月の目標：${hh(goal)}h（1日平均${hh(p1(goal/nP.days))}h）→ 見込み ${yen(pay)}円`});
@@ -799,6 +809,7 @@ function drawPlan(){
     <tr><th>対象期間</th><td>${CONFIG.start} 〜 ${CONFIG.end}（${CONFIG.days}日間）</td></tr>
     <tr><th>締め・支給</th><td>月末締め／${CONFIG.payday} 支給。翌月1日から自動でリセット</td></tr>
     <tr><th>日割り</th><td>${CONFIG.prorate}</td></tr>
+    <tr><th>単価表</th><td>${esc(CONFIG.ruleLabel)}</td></tr>
     <tr><th>この期間の版</th><td>${CONFIG.mode}${CONFIG.breakLabel?'<br><span class="note">'+esc(CONFIG.breakLabel)+'</span>':''}</td></tr>`;
   const bs=CONFIG.hasBoost;
   let s=`<thead><tr><th></th><th class="n">固定給</th><th class="n">勉強歩合<br>上限</th>${bs?'<th class="n">ブースト<br>上限</th>':''}<th class="n">満額</th></tr></thead><tbody>`;
