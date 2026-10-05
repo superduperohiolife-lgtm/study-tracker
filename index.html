@@ -249,12 +249,14 @@ svg{display:block}
     <div class="note" style="margin-top:8px">長期休みの日だけ、その日の勉強時間が閾値を超えるたびに加算。月の合計とは<b>別枠</b>で計算する</div>
   </div>
   <div class="card" id="cardTarget">
-    <h2>勉強目標（曜日別）</h2>
+    <h2>勉強目標</h2>
+    <div class="scroll"><table id="tblGoal"></table></div>
+    <h3 id="tgHead">曜日別の予定</h3>
     <div class="scroll"><table id="tblTarget"></table></div>
     <div class="note" style="margin-top:8px" id="tgNote"></div>
   </div>
   <div class="card">
-    <h2>満額に必要な勉強量</h2>
+    <h2>歩合の上限に必要な勉強量</h2>
     <div class="scroll"><table id="tblMax"></table></div>
   </div>
   <div class="card">
@@ -316,12 +318,12 @@ const TERM_RULES = [
       yume:{ fixed:2000, tiers:[{upto:30,rate:60},{upto:50,rate:90},{upto:null,rate:120}], studyCap:5500 },
       yuki:{ fixed:1200, tiers:[{upto:20,rate:50},{upto:35,rate:70},{upto:null,rate:90}],  studyCap:3600 }
     } },
-  // 2026年10月改定：月100時間で歩合が満額、平均的な勉強時間で平均的なお小遣い額に到達
+  // 2026年10月改定（2026-10-05 再設定）：目標＝高校生月100h・中学生月80h。目標時間で歩合が上限、平均的な勉強時間で平均的なお小遣い額
   { from:'2026-10', label:'2026年10月改定', dailyMax:6, presets:[0.5,1,1.5,2,3,4],
-    std:{ yume:60, yuki:45 },
+    std:{ yume:60, yuki:50 }, goal:{ yume:100, yuki:80 },
     kids:{
-      yume:{ fixed:2000, tiers:[{upto:60,rate:50},{upto:90,rate:60},{upto:100,rate:70}], studyCap:5500 },
-      yuki:{ fixed:1200, tiers:[{upto:40,rate:20},{upto:70,rate:30},{upto:100,rate:60}], studyCap:3500 }
+      yume:{ fixed:1000, tiers:[{upto:60,rate:60},{upto:90,rate:70},{upto:100,rate:80}], studyCap:6500 },
+      yuki:{ fixed:500,  tiers:[{upto:40,rate:30},{upto:70,rate:40},{upto:80,rate:60}],  studyCap:3000 }
     } }
 ];
 function termRule(ym){ let r=TERM_RULES[0]; for(const t of TERM_RULES) if(ym>=t.from) r=t; return r; }
@@ -338,7 +340,7 @@ const PROMOTIONS = [
   { from:'2027-04', kids:{ yume:{ fixedAdd:500, grade:'高3' }, yuki:{ fixedAdd:500, grade:'中3' } } }
 ];
 
-/* 勉強目標（曜日別・時間）。支給額には影響しない。表示と分析に使う
+/* 曜日別の予定（時間）。支給額には影響しない。月の目標（goal）とは別に、日々の目安として表示・分析に使う
    week の並びは 日,月,火,水,木,金,土。from 以降に適用（新しい計画は配列に追加） */
 const TARGETS = {
   yuki: [
@@ -376,7 +378,8 @@ const RULES_BASE = [
   '学校の授業・塾の授業時間は含めない',
   '記録は本人がつける。虚偽の申告があった月は歩合ゼロ',
   '月末締め、支給は毎月末。翌月1日から新しい月としてゼロから集計',
-  '2026年10月に制度を改定（月100時間で歩合が満額になる単価表に変更）。9月分までは旧ルールで確定',
+  '自分の将来に関する調べ物（進路・大学・仕事など）は勉強時間に含めてよい。ただし1日30分（0.5時間）まで',
+  '2026年10月に制度を改定（目標：結愛 月100時間・結輝 月80時間。目標時間で歩合が上限に届く単価表）。9月分までは旧ルールで確定',
   '固定給・単価・閾値は改定後の値から下げない（＝同じ勉強時間でもらえる額は減らない）',
   '増額は「固定給を上げる」「単価を上げる」「上限を上げる」「支給項目を足す」のいずれか'
 ];
@@ -424,7 +427,7 @@ function getPeriod(ym){
     }
   }
   P.id = ym; P.label = ymLabel(ym);
-  P.std = termRule(ym).std; P.ruleLabel = EXPLICIT[ym] ? '特例（日割り）' : termRule(ym).label;
+  P.std = termRule(ym).std; P.goal = EXPLICIT[ym] ? null : (termRule(ym).goal||null); P.ruleLabel = EXPLICIT[ym] ? '特例（日割り）' : termRule(ym).label;
   P.days = daysBetween(P.start, P.end);
   P.payday = Number(ym.slice(5))+'/'+Number(P.end.slice(8))+'（月末）';
   P.boostRanges = P.boostRanges || [];
@@ -521,12 +524,12 @@ function analyze(ym, kid){
   const half=Math.floor(n/2);
   const h1=avg(hs.slice(0,half)), h2=avg(hs.slice(half));
   const std = P.std[kid]*P.days/30;
-  // 目標（曜日別）
+  // 月の目標（goal）
+  const goalM = P.goal ? P.goal[kid] : 0, hasGoal = goalM>0;
+  const goalNow = hasGoal ? goalM*n/P.days : 0;    // 今日までに進んでいるべき時間（日割り）
+  // 曜日別の予定
   const tg = days.map(d=>targetFor(kid,d));
   const hasTg = tg.some(v=>v!==null);
-  const tgH = tg.reduce((a,v)=>a+(v||0),0);
-  const Htg = hs.reduce((a,h,i)=>a+(tg[i]!==null?h:0),0);   // 目標の適用日だけの勉強時間
-  const tgMonth = dayList(P.start,P.end).reduce((a,d)=>a+(targetFor(kid,d)||0),0);
   const tgDays = tg.filter(v=>v>0).length;
   const tgHit = tg.filter((v,i)=>v>0 && hs[i]>=v).length;
   const dowR={}; days.forEach((d,i)=>{ if(tg[i]>0){ const w=wd(d); (dowR[w]=dowR[w]||[]).push(hs[i]/tg[i]); } });
@@ -546,27 +549,29 @@ function analyze(ym, kid){
 
   const msgs=[];
   const p1 = x => Math.round(x*10)/10;
-  const ret = ()=>({Htg,P,closed,n,H,studyDays,zeroDays,maxStreak,best,std,capH,proj,projPay,prevH,msgs,r,hasTg,tgH,tgMonth,tgDays,tgHit});
+  const ret = ()=>({P,closed,n,H,studyDays,zeroDays,maxStreak,best,std,capH,proj,projPay,prevH,msgs,r,hasTg,tgDays,tgHit,hasGoal,goalM,goalNow});
   if(n===0){ msgs.push({t:'tip',s:'まだこの月は始まっていない'}); return ret(); }
-  if(hasTg && tgH>0){
-    const ach=Htg/tgH, span=(tg[0]===null)?`（${targetPlan(kid,P.end).from.slice(5).replace('-','/')}以降）`:'';
-    if(ach>=1) msgs.push({t:'good',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
-    else if(ach>=0.7) msgs.push({t:'tip',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
-    else msgs.push({t:'warn',s:`目標${hh(tgH)}hに対して${hh(Htg)}h${span}（達成率${Math.round(ach*100)}%）`});
-    if(tgDays>=3) msgs.push({t: tgHit/tgDays>=0.6?'good':'warn', s:`その日の目標を達成した日：${tgDays}日中${tgHit}日`});
-    if(dowAvg.length>=2 && dowAvg[0][1]<0.6) msgs.push({t:'warn',s:`${dowAvg[0][0]}曜日が目標の${Math.round(dowAvg[0][1]*100)}%と一番届いていない`});
+  if(hasGoal){
+    const ref = closed ? goalM : goalNow, ach = ref>0 ? H/ref : 0;
+    const txt = closed ? `月の目標${hh(goalM)}hに対して${hh(H)}h（達成率${Math.round(ach*100)}%）`
+                       : `今日までの目標ペース${hh(Math.round(goalNow*10)/10)}hに対して${hh(H)}h（${Math.round(ach*100)}%）`;
+    msgs.push({t: ach>=1?'good':(ach>=0.7?'tip':'warn'), s:txt});
+  }
+  if(hasTg){
+    if(tgDays>=3) msgs.push({t: tgHit/tgDays>=0.6?'good':'warn', s:`曜日別の予定どおりできた日：${tgDays}日中${tgHit}日`});
+    if(dowAvg.length>=2 && dowAvg[0][1]<0.6) msgs.push({t:'warn',s:`${dowAvg[0][0]}曜日が予定の${Math.round(dowAvg[0][1]*100)}%と一番届いていない`});
   }
   const base = closed ? H : proj;
   const judge = closed || n>=7;   // 月初7日未満はペース判定しない
   // 良かった点
   if(judge && base>=capH) msgs.push({t:'good',s:`勉強歩合の上限（${hh(capH)}h）に${closed?'到達':'届くペース'}`});
-  else if(judge && !hasTg && base>=std) msgs.push({t:'good',s:`標準ライン（${hh(p1(std))}h）を${closed?'達成':'超えるペース'}`});
+  else if(judge && !hasGoal && base>=std) msgs.push({t:'good',s:`標準ライン（${hh(p1(std))}h）を${closed?'達成':'超えるペース'}`});
   if(n>=7 && studyDays/n>=0.8) msgs.push({t:'good',s:`${n}日中${studyDays}日勉強。ほぼ毎日続いている`});
   if(maxStreak>=7) msgs.push({t:'good',s:`最長${maxStreak}日連続で勉強`});
   if(best.h>=3) msgs.push({t:'good',s:`一番やった日：${best.d.slice(5).replace('-','/')}（${wd(best.d)}）${hh(best.h)}h`});
   if(prevH!==null && prevH>0 && H>prevH && n>=7) msgs.push({t:'good',s:`前月より +${hh(p1(H-prevH))}h（${Math.round((H/prevH-1)*100)}%増）${closed?'':'・同期比'}`});
   // 課題
-  if(judge && !hasTg && base<std*0.7) msgs.push({t:'warn',s:`標準ライン（${hh(p1(std))}h）の${Math.round(base/std*100)}%${closed?'':'ペース'}`});
+  if(judge && !hasGoal && base<std*0.7) msgs.push({t:'warn',s:`標準ライン（${hh(p1(std))}h）の${Math.round(base/std*100)}%${closed?'':'ペース'}`});
   if(n>=7 && zeroDays/n>=1/3) msgs.push({t:'warn',s:`0時間の日が${zeroDays}日（${Math.round(zeroDays/n*100)}%）`});
   if(n>=10 && h1>0 && h2<h1*0.7) msgs.push({t:'warn',s:`後半に失速（前半 1日${hh(p1(h1))}h → 後半 ${hh(p1(h2))}h）`});
   if(n>=10 && h2>h1*1.3 && h2>0) msgs.push({t:'good',s:`後半に伸びた（前半 1日${hh(p1(h1))}h → 後半 ${hh(p1(h2))}h）`});
@@ -578,20 +583,22 @@ function analyze(ym, kid){
     const nStd=nP.std[kid]*nP.days/30;
     let goal = Math.ceil(Math.max(nStd, H*1.1)*2)/2; goal=Math.min(goal, nCap);
     const pay = ceil10(nc.fixed+Math.min(studyPayRaw(goal,nc.tiers),nc.studyCap));
-    if(!hasTg) msgs.push({t:'tip',s:`来月の目標：${hh(goal)}h（1日平均${hh(p1(goal/nP.days))}h）→ 見込み ${yen(pay)}円`});
+    if(nP.goal && nP.goal[kid]){ const g=nP.goal[kid], gp=ceil10(nc.fixed+Math.min(studyPayRaw(g,nc.tiers),nc.studyCap));
+      msgs.push({t:'tip',s:`来月の目標：${hh(g)}h（1日平均${hh(p1(g/nP.days))}h）→ 達成で ${yen(gp)}円`}); }
+    else msgs.push({t:'tip',s:`来月の目標：${hh(goal)}h（1日平均${hh(p1(goal/nP.days))}h）→ 見込み ${yen(pay)}円`});
   } else {
     const left = P.days-n;
     msgs.push({t:'tip',s:`このペースだと月末 ${hh(p1(proj))}h → ${yen(projPay)}円の見込み`});
-    if(left>0 && H<capH && !hasTg){
+    if(left>0 && hasGoal && H<goalM){
+      msgs.push({t:'tip',s:`月の目標${hh(goalM)}hまであと${hh(p1(goalM-H))}h（残り${left}日・1日${hh(p1((goalM-H)/left))}h）`});
+    } else if(left>0 && H<capH && !hasGoal){
       const tgt = H<std ? std : capH;
       msgs.push({t:'tip',s:`${H<std?'標準ライン':'上限'}まであと${hh(p1(tgt-H))}h（残り${left}日・1日${hh(p1((tgt-H)/left))}h）`});
     }
   }
   if(n>=7 && zeroDays/n>=1/3) msgs.push({t:'tip',s:'0時間の日を作らない。15分だけでも記録すると連続日数が伸びる'});
   if(weH.length>=2 && wdH.length>=2 && avg(weH)<avg(wdH)*0.8) msgs.push({t:'tip',s:'休日にまとめて1〜2h足すのが一番伸ばしやすい'});
-  if(hasTg && !closed){ const td=targetFor(kid,t); if(td) msgs.push({t:'tip',s:`今日（${wd(t)}）の目標：${hh(td)}h`}); }
-  if(hasTg && closed){ const nm=addMonth(ym,1), nt=dayList(nm+'-01', nm+'-'+z2(lastDay(nm))).reduce((a,d)=>a+(targetFor(kid,d)||0),0);
-    if(nt>0) msgs.push({t:'tip',s:`来月の計画どおりなら合計${hh(nt)}h`}); }
+  if(hasTg && !closed){ const td=targetFor(kid,t); if(td) msgs.push({t:'tip',s:`今日（${wd(t)}）の予定：${hh(td)}h`}); }
   return ret();
 }
 function memoTop(ym, kid){
@@ -612,8 +619,8 @@ function fbHtml(ym){
         <div><b>${hh(a.H)}h</b><span>${a.closed?'合計':'ここまで'}</span></div>
         <div><b>${a.studyDays}/${a.n}日</b><span>勉強した日</span></div>
         <div><b>${a.maxStreak}日</b><span>最長連続</span></div>
-        ${a.hasTg && a.tgH>0
-          ? `<div><b>${Math.round(a.Htg/a.tgH*100)}%</b><span>目標達成率</span></div>`
+        ${a.hasGoal
+          ? `<div><b>${Math.round(a.H/(a.closed?a.goalM:Math.max(a.goalNow,0.01))*100)}%</b><span>${a.closed?'目標達成率':'目標ペース比'}</span></div>`
           : `<div><b>${a.prevH===null?'—':((a.H-a.prevH>=0?'+':'')+hh(Math.round((a.H-a.prevH)*10)/10)+'h')}</b><span>${a.closed?'前月比':'前月同期比'}</span></div>`}
       </div>
       <ul class="fbl">${a.msgs.map(m=>`<li class="${m.t}">${esc(m.s)}</li>`).join('')}</ul>
@@ -656,7 +663,7 @@ function render(){
     return `<option value="${ym}"${ym===CONFIG.id?' selected':''}>${P.label}・${P.mode.replace('Ver','')}（${st}）</option>`;
   }).join('');
   document.getElementById('inputNote').textContent =
-    `15分（0.25時間）単位。1日${CONFIG.dailyMax}時間まで。学校・塾の授業時間は含めない`;
+    `15分（0.25時間）単位。1日${CONFIG.dailyMax}時間まで。学校・塾の授業時間は含めない。自分の将来に関する調べ物は1日30分まで含めてよい`;
   const fd=document.getElementById('fDate');
   fd.min=CONFIG.start; fd.max=CONFIG.end;
   for(const k of KEYS){ const el=document.getElementById('f'+cap1(k)); if(el) el.max=CONFIG.dailyMax; }
@@ -676,7 +683,6 @@ function render(){
         <span class="kidname">${c.name}</span>
         <span class="kidgrade">${c.grade}</span>
         ${closed?'<span class="tag warn">締め済み</span>':''}
-        <span style="margin-left:auto;font-size:11px;color:var(--tx3)">満額 ${yen(r.max)}円</span>
       </div>
       <div class="total">${yen(r.payout)}<small>円</small></div>
       <div class="tsub">${closed?'確定（記録分）':'支給見込み'}（${CONFIG.payday} 支給・10円単位切り上げ）${(ms.m.adjust||ms.extra)?`<br>調整 ${sgn(ms.m.adjust||0)}円・臨時 ${sgn(ms.extra)}円 → 今月の合計 <b style="color:var(--tx)">${yen(ms.total)}円</b>`:''}</div>
@@ -693,7 +699,7 @@ function render(){
       ${tgCardHtml(k)}
       <div class="mini">
         <div><b>${hh(r.hours)}<span style="font-size:10px"> h</span></b><span>累計 勉強時間</span></div>
-        <div><b>${hh(r.hours/CONFIG.days)}<span style="font-size:10px"> h</span></b><span>1日平均</span></div>
+        <div><b>${hh(r.hours/Math.max(elapsedDays(CONFIG),1))}<span style="font-size:10px"> h</span></b><span>1日平均（${elapsedDays(CONFIG)}日間）</span></div>
         <div><b>${daysLeft()}<span style="font-size:10px"> 日</span></b><span>残り</span></div>
       </div>
       ${closed
@@ -702,7 +708,7 @@ function render(){
             ? `いま追加で1時間やると <b>+${yen(r.nextRate)}円</b>　<span style="color:var(--tx3)">（勉強歩合の単価）</span>`
             : ( c.boostCap>0 && r.boost<c.boostCap
                 ? `<span style="color:var(--warn)">勉強歩合は上限に到達。日次ブーストで${yen(c.boostCap-r.boost)}円ぶんまだ伸ばせる</span>`
-                : `<span style="color:var(--warn)">この月は満額に到達。おつかれさま</span>` ) }</div>`}
+                : `<span style="color:var(--warn)">歩合は上限に到達。おつかれさま</span>` ) }</div>`}
     </div>`;
   }
   document.getElementById('cards').innerHTML=html;
@@ -716,23 +722,26 @@ function render(){
   drawBar(); drawLine(); drawTable(); drawPlan(); drawHist();
 }
 function tgCardHtml(k){
-  const days=dayList(CONFIG.start, CONFIG.end);
-  const tgMonth=days.reduce((a,d)=>a+(targetFor(k,d)||0),0);
-  if(!tgMonth) return '';
-  const t=todayStr(), upto=days.filter(d=>d<=t);
-  const tgNow=upto.reduce((a,d)=>a+(targetFor(k,d)||0),0);
-  const H=calc(k,DATA.records).hours, c=CONFIG.kids[k];
+  const goalM = CONFIG.goal ? CONFIG.goal[k] : 0;
+  const t=todayStr(), c=CONFIG.kids[k];
   const td=inRange(t)?targetFor(k,t):null, th=Number((DATA.records[t]||{})[k])||0;
-  const p=Math.min(100,H/tgMonth*100), pn=Math.min(100,tgNow/tgMonth*100);
-  return `<div class="brk">
-    <div class="brow"><span class="lb">勉強目標</span><span class="cap">今日まで ${hh(tgNow)}h／月 ${hh(tgMonth)}h</span>
-      <span class="vl" style="color:${H>=tgNow?'var(--ok)':'var(--warn)'}">${hh(H)}h（${tgNow?Math.round(H/tgNow*100):0}%）</span></div>
+  if(!goalM && td===null) return '';
+  const H=calc(k,DATA.records).hours;
+  let h='<div class="brk">';
+  if(goalM){
+    const n=elapsedDays(CONFIG), goalNow=goalM*n/CONFIG.days;
+    const p=Math.min(100,H/goalM*100), pn=Math.min(100,goalNow/goalM*100);
+    h+=`<div class="brow"><span class="lb">勉強目標</span><span class="cap">月 ${hh(goalM)}h／今日までの目安 ${hh(Math.round(goalNow*10)/10)}h</span>
+      <span class="vl" style="color:${H>=goalNow?'var(--ok)':'var(--warn)'}">${hh(H)}h（${Math.round(H/goalM*100)}%）</span></div>
     <div class="bar" style="position:relative"><i style="width:${p}%;background:${c.color}"></i>
-      <span style="position:absolute;left:${pn}%;top:-2px;width:2px;height:9px;background:var(--tx)"></span></div>
-    ${td!==null?`<div class="brow"><span class="lb">今日（${wd(t)}）</span><span class="cap">目標 ${hh(td)}h</span>
-      <span class="vl" style="color:${th>=td?'var(--ok)':'inherit'}">${hh(th)}h${th>=td?' 達成':''}</span></div>`:''}
-  </div>`;
+      <span style="position:absolute;left:${pn}%;top:-2px;width:2px;height:9px;background:var(--tx)"></span></div>`;
+  }
+  if(td!==null) h+=`<div class="brow"><span class="lb">今日（${wd(t)}）</span><span class="cap">予定 ${hh(td)}h</span>
+      <span class="vl" style="color:${th>=td?'var(--ok)':'inherit'}">${hh(th)}h${th>=td?' 達成':''}</span></div>`;
+  return h+'</div>';
 }
+/* 月初から今日まで（締め済みは月の全日数）の経過日数 */
+function elapsedDays(P){ const t=todayStr(); if(t<P.start) return 0; return daysBetween(P.start, t>P.end?P.end:t); }
 function cap1(k){ return k[0].toUpperCase()+k.slice(1); }
 
 /* --- 日別 棒グラフ --- */
@@ -774,7 +783,6 @@ function drawLine(){
   }
   for(const k of KEYS){
     const c=CONFIG.kids[k], col=KIDS_META[k].hex, mx=c.fixed+c.studyCap+c.boostCap;
-    s+=`<line x1="${pad.l}" y1="${y(mx)}" x2="${W-pad.r}" y2="${y(mx)}" stroke="${col}" stroke-dasharray="3 3" opacity=".45"/>`;
     const pts=[], sub={};
     days.forEach((dt,i)=>{ if(DATA.records[dt]) sub[dt]=DATA.records[dt]; pts.push([x(i), y(calc(k,sub).total)]); });
     s+=`<polyline fill="none" stroke="${col}" stroke-width="2" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
@@ -812,12 +820,11 @@ function drawPlan(){
     <tr><th>単価表</th><td>${esc(CONFIG.ruleLabel)}</td></tr>
     <tr><th>この期間の版</th><td>${CONFIG.mode}${CONFIG.breakLabel?'<br><span class="note">'+esc(CONFIG.breakLabel)+'</span>':''}</td></tr>`;
   const bs=CONFIG.hasBoost;
-  let s=`<thead><tr><th></th><th class="n">固定給</th><th class="n">勉強歩合<br>上限</th>${bs?'<th class="n">ブースト<br>上限</th>':''}<th class="n">満額</th></tr></thead><tbody>`;
+  let s=`<thead><tr><th></th><th class="n">固定給</th><th class="n">勉強歩合<br>上限</th>${bs?'<th class="n">ブースト<br>上限</th>':''}</tr></thead><tbody>`;
   for(const k of KEYS){ const c=CONFIG.kids[k];
     s+=`<tr><td style="color:${c.color};font-weight:700">${c.name}</td><td class="n">${yen(c.fixed)}</td><td class="n">${yen(c.studyCap)}</td>
-        ${bs?`<td class="n">${yen(c.boostCap)}</td>`:''}<td class="n"><b>${yen(c.fixed+c.studyCap+c.boostCap)}</b></td></tr>`; }
-  s+=`<tr><td style="color:var(--tx3)">2人合計</td><td class="n"></td><td class="n"></td>${bs?'<td class="n"></td>':''}
-      <td class="n"><b>${yen(KEYS.reduce((a,k)=>{const c=CONFIG.kids[k];return a+c.fixed+c.studyCap+c.boostCap;},0))}</b></td></tr></tbody>`;
+        ${bs?`<td class="n">${yen(c.boostCap)}</td>`:''}</tr>`; }
+  s+=`</tbody>`;
   document.getElementById('tblFix').innerHTML=s;
 
   s='';
@@ -848,7 +855,7 @@ function drawPlan(){
   document.getElementById('tblBoost').innerHTML=s+`</tbody>`;
 
   const bDays = CONFIG.boostRanges.reduce((a,r)=>a+daysBetween(r[0],r[1]),0);
-  s=`<thead><tr><th></th><th class="n">勉強歩合の<br>上限まで</th>${bs?'<th class="n">集中型で<br>ブースト満額</th>':''}</tr></thead><tbody>`;
+  s=`<thead><tr><th></th><th class="n">勉強歩合の<br>上限まで</th>${bs?'<th class="n">集中型で<br>ブースト上限</th>':''}</tr></thead><tbody>`;
   for(const k of KEYS){
     const c=CONFIG.kids[k], h=hoursForCap(c);
     let extra='';
@@ -861,9 +868,20 @@ function drawPlan(){
         <td class="n">計${hh(h)}h<br><span style="font-size:10px;color:var(--tx3)">1日${hh(h/CONFIG.days)}h</span></td>${extra}</tr>`;
   }
   document.getElementById('tblMax').innerHTML=s+`</tbody>`;
-  // 勉強目標
+  // 勉強目標（月の目標＋曜日別の予定）
   const tk=KEYS.filter(k=>targetPlan(k,CONFIG.end));
-  document.getElementById('cardTarget').style.display = tk.length ? '' : 'none';
+  const gk=KEYS.filter(k=>CONFIG.goal && CONFIG.goal[k]);
+  document.getElementById('cardTarget').style.display = (tk.length||gk.length) ? '' : 'none';
+  let g='';
+  if(gk.length){
+    g=`<thead><tr><th></th><th class="n">月の目標</th><th class="n">1日の目安</th><th class="n">達成時の額</th></tr></thead><tbody>`;
+    for(const k of gk){ const c=CONFIG.kids[k], gh=CONFIG.goal[k];
+      g+=`<tr><td style="color:${c.color};font-weight:700">${c.name}</td><td class="n" style="font-weight:600">${hh(gh)}h</td>
+          <td class="n">${hh(Math.round(gh/CONFIG.days*10)/10)}h</td><td class="n">${yen(ceil10(c.fixed+Math.min(studyPayRaw(gh,c.tiers),c.studyCap)))}円</td></tr>`; }
+    g+=`</tbody>`;
+  }
+  document.getElementById('tblGoal').innerHTML=g;
+  document.getElementById('tgHead').style.display = tk.length ? '' : 'none';
   if(tk.length){
     const order=[1,2,3,4,5,6,0], W=['日','月','火','水','木','金','土'];
     let t=`<thead><tr><th>曜日</th>`;
@@ -878,11 +896,11 @@ function drawPlan(){
     for(const k of tk){ const p=targetPlan(k,CONFIG.end); t+=`<td class="n">${hh(p.week.reduce((a,b)=>a+b,0))}h</td><td></td>`; }
     t+=`</tr></tbody>`;
     document.getElementById('tblTarget').innerHTML=t;
-    document.getElementById('tgNote').innerHTML = tk.map(k=>{
+  } else document.getElementById('tblTarget').innerHTML='';
+  document.getElementById('tgNote').innerHTML = tk.map(k=>{
       const p=targetPlan(k,CONFIG.end), mt=dayList(CONFIG.start,CONFIG.end).reduce((a,d)=>a+(targetFor(k,d)||0),0);
-      return `${KIDS_META[k].name}：${CONFIG.label}の目標合計 ${hh(mt)}h（勉強歩合の上限は${hh(hoursForCap(CONFIG.kids[k]))}hで到達）。出典：${esc(p.src)}。適用開始 ${p.from}`;
-    }).join('<br>') + '<br>目標は表示と分析用。支給額の計算には影響しない';
-  }
+      return `${KIDS_META[k].name}の予定：${CONFIG.label}の合計 ${hh(mt)}h（出典：${esc(p.src)}）`;
+    }).concat(['目標・予定は表示と分析用。支給額は勉強時間と単価表で決まる']).join('<br>');
   document.getElementById('rules').innerHTML = CONFIG.rules.map((r,i)=>`${i+1}. ${r}`).join('<br>');
 }
 
@@ -1022,7 +1040,7 @@ function buildPresets(){
 function updTgHint(){
   const d=document.getElementById('fDate').value;
   for(const k of KEYS){ const el=document.getElementById('tg'+cap1(k)); if(!el) continue;
-    const v=d?targetFor(k,d):null; el.textContent = v!==null ? `（目標 ${hh(v)}h）` : ''; }
+    const v=d?targetFor(k,d):null; el.textContent = v!==null ? `（予定 ${hh(v)}h）` : ''; }
 }
 /* 子ども切替タブ（端末ごとに最後の選択を覚える） */
 let KID='yume';
